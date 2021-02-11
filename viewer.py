@@ -5,7 +5,7 @@ from PySide2.QtCore import QPoint, QRect
 from PySide2.QtGui import QImage, QPixmap, QIcon
 from PySide2.QtGui import QPainter
 from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QLabel,
-                               QFileDialog)
+                               QFileDialog, QStyle, QCommonStyle)
 from pydicom import dcmread
 
 from getusimage import extract_image
@@ -22,12 +22,14 @@ class Viewer(QMainWindow):
             self.lbl = QLabel(self)
             self.setCentralWidget(self.lbl)
 
-            open_action = QAction(QIcon('open.png'), 'Open DCM', self)
+            st = QCommonStyle()
+
+            open_action = QAction(st.standardIcon(QStyle.SP_DialogOpenButton), 'Open DCM', self)
             open_action.setShortcut('Ctrl+O')
             open_action.setStatusTip('Open DCM file')
             open_action.triggered.connect(self.open_dcm_file)
 
-            printer_action = QAction(QIcon('printer.png'), 'Print image', self)
+            printer_action = QAction(st.standardIcon(QStyle.SP_FileDialogDetailedView), 'Print image', self)
             printer_action.triggered.connect(self.print_image)
 
             self.statusBar()
