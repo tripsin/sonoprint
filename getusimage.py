@@ -4,6 +4,7 @@ from PySide2.QtGui import QImage, QPixmap
 
 from pydicom import dcmread
 
+
 def _get_lut_value(data, window, level):
     """Apply the RGB Look-Up Table for the given
        data and window/level value."""
@@ -52,8 +53,8 @@ def _get_pil_image(dataset):
         image = _get_lut_value(dataset.pixel_array, ww, wc)
         # Convert mode to L since LUT has only 256 values:
         #   http://www.pythonware.com/library/pil/handbook/image.htm
-        #im = PIL.Image.fromarray(image).convert('L') # Grey (from manual)
-        im = PIL.Image.fromarray(image).convert('RGB') # color
+        # im = PIL.Image.fromarray(image).convert('L') # Grey (from manual)
+        im = PIL.Image.fromarray(image).convert('RGB')  # color
 
     return im
 
@@ -66,16 +67,17 @@ def _process(image):
 
 
 def extract_image(dataset):
-    ''' Return processed PIL.image '''
+    """ Return processed PIL.image """
     im = _get_pil_image(dataset)
     im = _process(im)
     return im
 
+
 def get_qpxmap_from(dataset):
-    ''' Return QT5 QPixmap from DICOM dataset'''
+    """ Return QT5 QPixmap from DICOM dataset"""
     im = _get_pil_image(dataset)
     im = _process(im)
-    data = im.tobytes("raw","RGB")
+    data = im.tobytes("raw", "RGB")
     qim = QImage(data, im.size[0], im.size[1], QImage.Format_RGB888)
     return QPixmap(qim)
 

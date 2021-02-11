@@ -1,19 +1,17 @@
 import sys
 
-from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QLabel, 
-                            QFileDialog)
-from PySide2.QtGui import QImage, QPixmap, QIcon
-from PySide2 import QtCore, QtPrintSupport
-
-from PySide2.QtGui import QPainter
+from PySide2 import QtPrintSupport
 from PySide2.QtCore import QPoint, QRect
-
+from PySide2.QtGui import QImage, QPixmap, QIcon
+from PySide2.QtGui import QPainter
+from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QLabel,
+                               QFileDialog)
 from pydicom import dcmread
 
-from  getusimage import extract_image
+from getusimage import extract_image
+from getusimage import get_qpxmap_from
 from scp_server import SCPServer
 
-from getusimage import get_qpxmap_from
 
 class Viewer(QMainWindow):
 
@@ -23,27 +21,27 @@ class Viewer(QMainWindow):
 
             self.lbl = QLabel(self)
             self.setCentralWidget(self.lbl)
-            
-            openAction = QAction(QIcon('open.png'), 'Open DCM', self)
-            openAction.setShortcut('Ctrl+O')
-            openAction.setStatusTip('Open DCM file')
-            openAction.triggered.connect(self.open_dcm_file)
 
-            printerAction = QAction(QIcon('printer.png'), 'Print image', self)
-            printerAction.triggered.connect(self.print_image)
+            open_action = QAction(QIcon('open.png'), 'Open DCM', self)
+            open_action.setShortcut('Ctrl+O')
+            open_action.setStatusTip('Open DCM file')
+            open_action.triggered.connect(self.open_dcm_file)
+
+            printer_action = QAction(QIcon('printer.png'), 'Print image', self)
+            printer_action.triggered.connect(self.print_image)
 
             self.statusBar()
 
             menubar = self.menuBar()
-            fileMenu = menubar.addMenu('&File')
-            fileMenu.addAction(openAction)
-            printMenu = menubar.addMenu('&Print')
-            printMenu.addAction(printerAction)
+            file_menu = menubar.addMenu('&File')
+            file_menu.addAction(open_action)
+            print_menu = menubar.addMenu('&Print')
+            print_menu.addAction(printer_action)
 
             toolbar = self.addToolBar('Open')
-            toolbar.addAction(openAction)
+            toolbar.addAction(open_action)
             printtool = self.addToolBar('Print')
-            printtool.addAction(printerAction)
+            printtool.addAction(printer_action)
 
             self.setGeometry(300, 300, 350, 250)
             self.setWindowTitle('Main window')
@@ -61,13 +59,13 @@ class Viewer(QMainWindow):
     def open_dcm_file(self):
         try:
             fn = QFileDialog.getOpenFileName(self, 'Выбрать DICOM-файл', '', '*.dcm')
-            im = extract_image(dcmread(fn[0])) # PIL image
+            im = extract_image(dcmread(fn[0]))  # PIL image
 
             # im = im.convert('RGBA')
             # data = im.tobytes("raw","RGBA")
             # imqt = QImage(data, im.size[0], im.size[1], QImage.Format_RGBA8888)
 
-            data = im.tobytes("raw","RGB")
+            data = im.tobytes("raw", "RGB")
             imqt = QImage(data, im.size[0], im.size[1], QImage.Format_RGB888)
             pix = QPixmap(imqt)
             self.lbl.setPixmap(pix)
@@ -79,12 +77,11 @@ class Viewer(QMainWindow):
         printer = QtPrintSupport.QPrinter()
         painter = QPainter()
         painter.begin(printer)
-        p = QPoint(0,0)
-        r = QRect(150,100,300,300)
+        p = QPoint(0, 0)
+        r = QRect(150, 100, 300, 300)
         # TODO ds from scp_server must be refactored
         painter.drawPixmap(p, get_qpxmap_from(self.scp.ds), r)
         painter.end()
-
 
     '''
     def handlePreview(self):
@@ -97,8 +94,8 @@ class Viewer(QMainWindow):
         self.view.render(QtGui.QPainter(printer))
     '''
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Viewer()
     sys.exit(app.exec_())
