@@ -1,12 +1,12 @@
 import sys
 
-from PyQt5.QtWidgets import (QMainWindow, QAction, QApplication, QLabel, 
+from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QLabel, 
                             QFileDialog)
-from PyQt5.QtGui import QImage, QPixmap, QIcon
-from PyQt5 import QtCore, QtPrintSupport
+from PySide2.QtGui import QImage, QPixmap, QIcon
+from PySide2 import QtCore, QtPrintSupport
 
-from PyQt5.QtGui import QPainter
-from PyQt5.QtCore import QPoint, QRect
+from PySide2.QtGui import QPainter
+from PySide2.QtCore import QPoint, QRect
 
 from pydicom import dcmread
 
@@ -88,7 +88,7 @@ class Viewer(QMainWindow):
 
     '''
     def handlePreview(self):
-        # dialog = QtPrintSupport.QPrintPreviewDialog() # PyQt5
+        # dialog = QtPrintSupport.QPrintPreviewDialog() # PySide2
         dialog = QtGui.QPrintPreviewDialog()
         dialog.paintRequested.connect(self.handlePaintRequest)
         dialog.exec_()

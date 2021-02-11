@@ -1,6 +1,6 @@
 import PIL.Image
 import numpy
-from PyQt5.QtGui import QImage, QPixmap
+from PySide2.QtGui import QImage, QPixmap
 
 from pydicom import dcmread
 
