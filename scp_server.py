@@ -3,8 +3,6 @@ import socket
 from pynetdicom import AE, evt
 from pydicom.uid import ImplicitVRLittleEndian
 
-from getusimage import get_qpxmap_from
-
 
 def try_port(port):
     """ Return True if *port* free """
@@ -22,17 +20,18 @@ def try_port(port):
 
 class SCPServer:
 
-    def __init__(self, viewer):
+    def __init__(self, dataset_handler):
+        """
+        @param dataset_handler: callback function from GUI
+        call: dataset_handler(dataset)
+        """
         self.ae = AE()
-        self.ae.add_supported_context('1.2.840.10008.5.1.4.1.1.6.1',
-                                      ImplicitVRLittleEndian)  # UltrasoundImageStorage
+        self.ae.add_supported_context('1.2.840.10008.5.1.4.1.1.6.1', ImplicitVRLittleEndian)  # UltrasoundImageStorage
         self.handlers = [(evt.EVT_C_STORE, self.handle_c_store)]
-        self.viewer = viewer
-        # print('DEBUG-SCP-SERVER: viewer - ', self.viewer)
+        self.dataset_handler = dataset_handler
 
     def start(self):
         try:
-            print('Server IMG starting ...\n')
             if try_port(104):
                 self.ae.start_server(('', 104), block=False, evt_handlers=self.handlers)
         except Exception as e:
@@ -44,11 +43,9 @@ class SCPServer:
     def handle_c_store(self, event):
         """ Handle EVT_C_STORE events. """
         try:
-            # print('\nDEBUG: start handling C-STORE')
-            self.ds = event.dataset
-            self.ds.file_meta = event.file_meta
-            self.viewer.setPixmap(get_qpxmap_from(self.ds))
-            # print('\nDEBUG: DATESET sent to QPixmap!')
+            ds = event.dataset
+            ds.file_meta = event.file_meta
+            self.dataset_handler(ds)
         except Exception as e:
             print('\nERROR: ', e)
             return 0xC001

@@ -1,8 +1,8 @@
 import os
 import sys
 
-from pynetdicom import AE
 from pydicom import dcmread
+from pynetdicom import AE
 
 DCM_DIR = './dcm/'
 
@@ -16,7 +16,7 @@ if __name__ == '__main__':
         file_name = DCM_DIR + sys.argv[1]
         print('File to send: {}'.format(file_name))
         ds = dcmread(file_name)
-    except Exception:
+    except FileNotFoundError:
         for f in os.listdir(DCM_DIR):
             print(f)
         sys.exit()

@@ -66,21 +66,21 @@ def _process(image):
     return image
 
 
-def extract_image(dataset):
-    """ Return processed PIL.image """
-    im = _get_pil_image(dataset)
-    im = _process(im)
-    return im
-
-
 def get_qpxmap_from(dataset):
     """ Return QT5 QPixmap from DICOM dataset"""
     im = _get_pil_image(dataset)
     im = _process(im)
+
+    # im = im.convert('RGBA')
+    # data = im.tobytes("raw","RGBA")
+    # imqt = QImage(data, im.size[0], im.size[1], QImage.Format_RGBA8888)
+
     data = im.tobytes("raw", "RGB")
     qim = QImage(data, im.size[0], im.size[1], QImage.Format_RGB888)
     return QPixmap(qim)
 
 
 if __name__ == '__main__':
-    extract_image(dcmread('./dcm/27.dcm')).save('./img/27.jpg')
+    im = _get_pil_image(dcmread('./test_scu/dcm/27.dcm'))
+    im = _process(im)
+    im.save('./27.jpg')
