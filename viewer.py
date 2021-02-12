@@ -32,6 +32,9 @@ class Viewer(QMainWindow):
             printer_action = QAction(st.standardIcon(QStyle.SP_FileDialogDetailedView), 'Print image', self)
             printer_action.triggered.connect(self.print_image)
 
+            preview_action = QAction(st.standardIcon(QStyle.SP_FileDialogContentsView), 'Preview Print', self)
+            preview_action.triggered.connect(self.preview_print)
+
             self.statusBar()
 
             menubar = self.menuBar()
@@ -39,11 +42,15 @@ class Viewer(QMainWindow):
             file_menu.addAction(open_action)
             print_menu = menubar.addMenu('&Print')
             print_menu.addAction(printer_action)
+            preview_menu = menubar.addMenu('Pre&view')
+            preview_menu.addAction(preview_action)
 
             toolbar = self.addToolBar('Open')
             toolbar.addAction(open_action)
             printtool = self.addToolBar('Print')
             printtool.addAction(printer_action)
+            previewtool = self.addToolBar('Preview')
+            previewtool.addAction(preview_action)
 
             self.setGeometry(300, 300, 350, 250)
             self.setWindowTitle('Main window')
@@ -77,6 +84,23 @@ class Viewer(QMainWindow):
 
     def print_image(self):
         printer = QtPrintSupport.QPrinter()
+        dialog = QtPrintSupport.QPrintDialog(printer, self)
+        dialog.setWindowTitle('Print image')
+        if dialog.exec_() == dialog.Accepted:
+            painter = QPainter()
+            painter.begin(printer)
+            p = QPoint(0, 0)
+            r = QRect(150, 100, 300, 300)
+            # TODO ds from scp_server must be refactored
+            painter.drawPixmap(p, get_qpxmap_from(self.scp.ds), r)
+            painter.end()
+
+    def preview_print(self):
+        dialog = QtPrintSupport.QPrintPreviewDialog()
+        dialog.paintRequested.connect(self.handle_paint_request)
+        dialog.exec_()
+
+    def handle_paint_request(self, printer):
         painter = QPainter()
         painter.begin(printer)
         p = QPoint(0, 0)
@@ -84,17 +108,7 @@ class Viewer(QMainWindow):
         # TODO ds from scp_server must be refactored
         painter.drawPixmap(p, get_qpxmap_from(self.scp.ds), r)
         painter.end()
-
-    '''
-    def handlePreview(self):
-        # dialog = QtPrintSupport.QPrintPreviewDialog() # PySide2
-        dialog = QtGui.QPrintPreviewDialog()
-        dialog.paintRequested.connect(self.handlePaintRequest)
-        dialog.exec_()
-
-    def handlePaintRequest(self, printer):
-        self.view.render(QtGui.QPainter(printer))
-    '''
+        self.view.render(painter)
 
 
 if __name__ == '__main__':
