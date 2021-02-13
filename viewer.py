@@ -3,14 +3,11 @@ import sys
 from PySide2 import QtPrintSupport
 from PySide2.QtCore import QPoint, QRect
 from PySide2.QtGui import QPainter
-from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QLabel,
-                               QFileDialog, QStyle, QCommonStyle, QListWidgetItem)
+from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QFileDialog, QStyle, QCommonStyle)
 from pydicom import dcmread
 
-from getusimage import get_qpxmap_from
+from imagebox import ImageList
 from scp_server import SCPServer
-
-from imagebox import ImageBox, ImageList, QListWidget
 
 
 class Viewer(QMainWindow):
@@ -19,16 +16,8 @@ class Viewer(QMainWindow):
         try:
             super().__init__()
 
-            self.imagebox = ImageBox()
-            self.setCentralWidget(self.imagebox)
-            # self.lbl = QLabel(self)
-            # self.setCentralWidget(self.lbl)
-
-            '''
-            self.viewer = QListWidget(self)
+            self.viewer = ImageList()
             self.setCentralWidget(self.viewer)
-            self.viewer.setViewMode(QListWidget.IconMode)
-            '''
 
             st = QCommonStyle()
 
@@ -69,7 +58,7 @@ class Viewer(QMainWindow):
             # --------------------------
 
             self.current_pixmap = None
-            self.scp = SCPServer(self.show_dicom_image)
+            self.scp = SCPServer(self.viewer.dataset_handler)
             self.scp.start()
 
             # --------------------------
@@ -78,37 +67,12 @@ class Viewer(QMainWindow):
             print(e)
             sys.exit()
 
-    def show_dicom_image(self, ds):
-        try:
-            self.current_pixmap = get_qpxmap_from(ds)
-            # self.lbl.setPixmap(self.current_pixmap)
-
-            self.imagebox.set_image(self.current_pixmap)
-            self.imagebox.set_title(ds.file_meta['MediaStorageSOPInstanceUID'].value)
-
-            '''
-            last_image = ImageBox()
-            last_image.set_image(self.current_pixmap)
-            last_image.set_title(ds.file_meta['MediaStorageSOPInstanceUID'].value)
-            view_item = QListWidgetItem(self.viewer)
-            # view_item.setSizeHint(last_image.sizeHint())
-            view_item.setSizeHint(last_image.size())
-            print(last_image.size())
-            self.viewer.addItem(view_item)
-            self.viewer.setItemWidget(view_item, last_image)
-            # print(self.viewer.viewMode())
-            '''
-
-        except Exception as e:
-            print(e)
-
-
 
     def open_dcm_file(self):
         try:
             fn = QFileDialog.getOpenFileName(self, 'Выбрать DICOM-файл', '', '*.dcm')[0]
             if fn:
-                self.show_dicom_image(dcmread(fn))
+                self.viewer.dataset_handler(dcmread(fn))
         except Exception as e:
             print(e)
 
