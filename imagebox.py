@@ -1,40 +1,46 @@
+from PySide2.QtCore import Qt, Signal, Slot
 from PySide2.QtWidgets import (QGroupBox, QVBoxLayout, QLabel,
-                               QLineEdit, QListWidget, QListWidgetItem,
-                               QAbstractScrollArea)
-from PySide2.QtCore import Qt
+                               QLineEdit, QListWidget, QListWidgetItem)
+from pydicom import Dataset
 
 from getusimage import get_qpxmap_from
 
 
 class ImageList(QListWidget):
+    my_signal = Signal(Dataset)
+
     def __init__(self):
         super().__init__()
         self.setViewMode(QListWidget.IconMode)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.my_signal.connect(self.my_signal_handler)
 
-    def dataset_handler(self, ds):
-        pixmap = get_qpxmap_from(ds)
-        box = ImageBox(pixmap)
-        box.set_title(ds.file_meta['MediaStorageSOPInstanceUID'].value)
+    def signal(self):
+        return self.my_signal
+
+    @Slot(Dataset)
+    def my_signal_handler(self, ds):
+        box = ImageBox(get_qpxmap_from(ds), ds.file_meta['MediaStorageSOPInstanceUID'].value)
         view_item = QListWidgetItem(self)
         view_item.setSizeHint(box.size())
         self.addItem(view_item)
         self.setItemWidget(view_item, box)
 
-    def get_dataset_handler(self):
-        return self.dataset_handler
+    def dataset_handler(self, ds):
+        self.my_signal.emit(ds)
 
 
 class ImageBox(QGroupBox):
     """ TODO Refresh if window resized"""
-    def __init__(self, pixmap):
+
+    def __init__(self, pixmap, title):
         super().__init__()
         self.pixmap = pixmap
 
         self.setCheckable(True)
         self.setChecked(True)
-        self.setTitle('empty')
+        self.setTitle(title)
         self.layout = QVBoxLayout(self)
 
         self.img = QLabel()
@@ -54,6 +60,3 @@ class ImageBox(QGroupBox):
 
     def disable(self):
         self.setChecked(False)
-
-    def set_title(self, name):
-        self.setTitle(name)

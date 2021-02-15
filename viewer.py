@@ -67,7 +67,6 @@ class Viewer(QMainWindow):
             print(e)
             sys.exit()
 
-
     def open_dcm_file(self):
         try:
             fn = QFileDialog.getOpenFileName(self, 'Выбрать DICOM-файл', '', '*.dcm')[0]

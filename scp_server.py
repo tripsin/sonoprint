@@ -1,7 +1,13 @@
 import socket
 
+from copy import deepcopy
+
+from PySide2.QtCore import QMutex
+
 from pynetdicom import AE, evt
 from pydicom.uid import ImplicitVRLittleEndian
+
+dicom_lock = QMutex()
 
 
 def try_port(port):
@@ -42,10 +48,13 @@ class SCPServer:
 
     def handle_c_store(self, event):
         """ Handle EVT_C_STORE events. """
+        print('enter handle')
         try:
             ds = event.dataset
             ds.file_meta = event.file_meta
-            self.dataset_handler(ds)
+            print('3')
+            self.dataset_handler(deepcopy(ds))
+            print('4')
         except Exception as e:
             print('\nERROR: ', e)
             return 0xC001
