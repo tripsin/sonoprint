@@ -1,4 +1,5 @@
 import socket
+import sys
 
 from copy import deepcopy
 
@@ -18,13 +19,17 @@ def try_port(port):
         sock.bind(("0.0.0.0", port))
         result = True
     except Exception as e:
-        print('\nERROR: ', e)
+        print('Port {} is busy.'.format(port))
+        print(e)
     finally:
         sock.close()
     return result
 
 
 class SCPServer:
+    '''
+    https://ru.wikipedia.org/wiki/DICOM
+    '''
 
     def __init__(self, dataset_handler):
         """
@@ -37,24 +42,20 @@ class SCPServer:
         self.dataset_handler = dataset_handler
 
     def start(self):
-        try:
-            if try_port(104):
-                self.ae.start_server(('', 104), block=False, evt_handlers=self.handlers)
-        except Exception as e:
-            print('ERROR: ', e)
+        if try_port(104):
+            self.ae.start_server(('', 104), block=False, evt_handlers=self.handlers)
+        else:
+            sys.exit()
 
     def stop(self):
         self.ae.shutdown()
 
     def handle_c_store(self, event):
         """ Handle EVT_C_STORE events. """
-        print('enter handle')
         try:
             ds = event.dataset
             ds.file_meta = event.file_meta
-            print('3')
             self.dataset_handler(deepcopy(ds))
-            print('4')
         except Exception as e:
             print('\nERROR: ', e)
             return 0xC001
