@@ -1,4 +1,4 @@
-import PIL.Image
+from PIL import Image, ImageFilter
 import numpy
 from PySide2.QtGui import QImage, QPixmap
 
@@ -42,7 +42,7 @@ def _get_pil_image(dataset):
 
         # Recommended to specify all details
         # by http://www.pythonware.com/library/pil/handbook/image.htm
-        im = PIL.Image.frombuffer(mode, size, dataset.PixelData,
+        im = Image.frombuffer(mode, size, dataset.PixelData,
                                   "raw", mode, 0, 1)
 
     else:
@@ -54,12 +54,23 @@ def _get_pil_image(dataset):
         # Convert mode to L since LUT has only 256 values:
         #   http://www.pythonware.com/library/pil/handbook/image.htm
         # im = PIL.Image.fromarray(image).convert('L') # Grey (from manual)
-        im = PIL.Image.fromarray(image).convert('RGB')  # color
+        im = Image.fromarray(image).convert('RGB')  # color
 
     return im
 
 
 def _process(image):
+    crop_rect = (0, 95, 800, 760)
+    # image_size = 320, 260
+    image = image.crop(crop_rect)  # left, top, right, bottom
+
+    # image.thumbnail(image_size, Image.LANCZOS) - damage image!
+
+    basewidth = 320
+    wpercent = (basewidth / float(image.size[0]))
+    hsize = int((float(image.size[1]) * float(wpercent)))
+    image = image.resize((basewidth, hsize), Image.ANTIALIAS)
+
     """Empty function. TODO: Crop and calibrate image
     :type image: PIL.Image
     """
