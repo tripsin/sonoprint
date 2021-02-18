@@ -49,7 +49,7 @@ class Viewer(QMainWindow):
             previewtool = self.addToolBar('Preview')
             previewtool.addAction(preview_action)
 
-            self.setGeometry(300, 300, 350, 250)
+            self.setGeometry(300, 300, 600, 400)  # TODO: Get this from settings
             self.setWindowTitle('Main window')
             self.show()
 

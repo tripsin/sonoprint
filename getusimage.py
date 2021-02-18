@@ -42,8 +42,8 @@ def _get_pil_image(dataset):
 
         # Recommended to specify all details
         # by http://www.pythonware.com/library/pil/handbook/image.htm
-        im = Image.frombuffer(mode, size, dataset.PixelData,
-                                  "raw", mode, 0, 1)
+        image = Image.frombuffer(mode, size, dataset.PixelData,
+                                 "raw", mode, 0, 1)
 
     else:
         ew = dataset['WindowWidth']
@@ -54,44 +54,44 @@ def _get_pil_image(dataset):
         # Convert mode to L since LUT has only 256 values:
         #   http://www.pythonware.com/library/pil/handbook/image.htm
         # im = PIL.Image.fromarray(image).convert('L') # Grey (from manual)
-        im = Image.fromarray(image).convert('RGB')  # color
+        image = Image.fromarray(image).convert('RGB')  # color
 
-    return im
-
-
-def _process(image):
-    crop_rect = (0, 95, 800, 760)
-    # image_size = 320, 260
-    image = image.crop(crop_rect)  # left, top, right, bottom
-
-    # image.thumbnail(image_size, Image.LANCZOS) - damage image!
-
-    basewidth = 320
-    wpercent = (basewidth / float(image.size[0]))
-    hsize = int((float(image.size[1]) * float(wpercent)))
-    image = image.resize((basewidth, hsize), Image.ANTIALIAS)
-
-    """Empty function. TODO: Crop and calibrate image
-    :type image: PIL.Image
-    """
     return image
 
 
-def get_qpxmap_from(dataset):
+def _process(image, width):
+    """
+    Crop and calibrate image
+    :type image: PIL.Image
+    """
+
+    crop_rect = (0, 95, 800, 760)
+    image = image.crop(crop_rect)  # left, top, right, bottom
+
+    # image.thumbnail(image_size, Image.LANCZOS) - damage image!
+    basewidth = width
+    wpercent = (basewidth / float(image.size[0]))
+    hsize = int((float(image.size[1]) * float(wpercent)))
+    image = image.resize((basewidth, hsize), Image.LANCZOS)
+
+    return image
+
+
+def get_qpxmap_from(dataset, width):
     """ Return QT5 QPixmap from DICOM dataset"""
-    im = _get_pil_image(dataset)
-    im = _process(im)
+    image = _get_pil_image(dataset)
+    image = _process(image, width)
 
     # im = im.convert('RGBA')
     # data = im.tobytes("raw","RGBA")
     # imqt = QImage(data, im.size[0], im.size[1], QImage.Format_RGBA8888)
 
-    data = im.tobytes("raw", "RGB")
-    qim = QImage(data, im.size[0], im.size[1], QImage.Format_RGB888)
+    data = image.tobytes("raw", "RGB")
+    qim = QImage(data, image.size[0], image.size[1], QImage.Format_RGB888)
     return QPixmap(qim)
 
 
 if __name__ == '__main__':
     im = _get_pil_image(dcmread('./test_scu/dcm/27.dcm'))
-    im = _process(im)
+    im = _process(im, 640)
     im.save('./27.jpg')
