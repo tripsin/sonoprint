@@ -1,5 +1,5 @@
-from PySide2.QtCore import Qt, Signal, Slot
-from PySide2.QtGui import QPixmap
+from PySide2.QtCore import Qt, Signal, Slot, QEvent, QModelIndex
+from PySide2.QtGui import QPixmap, QTabletEvent, QShowEvent
 from PySide2.QtWidgets import (QGroupBox, QVBoxLayout, QLabel, QLineEdit,
                                QListWidget, QListWidgetItem)
 from pydicom import Dataset
@@ -32,6 +32,14 @@ class ImageList(QListWidget):
 
     def dataset_handler(self, ds):
         self.my_signal.emit(ds)
+
+    def resizeEvent(self, event):
+        # TODO: Ugly
+        self.takeItem(self.row(QListWidgetItem(self)))
+        # self.currentRowChanged.emit(-1)
+        # self.itemChanged.emit(self.item(0))
+        # self.dataChanged(QModelIndex.row(-1), QModelIndex.row(-1)).
+        # self.viewport().window().update()
 
 
 class ImageBox(QGroupBox):
