@@ -1,8 +1,9 @@
 import sys
 
 from PySide2 import QtPrintSupport
-from PySide2.QtCore import QPoint, QRect
+from PySide2.QtCore import QPoint
 from PySide2.QtGui import QPainter
+from PySide2.QtPrintSupport import QPrinter
 from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QFileDialog, QStyle, QCommonStyle)
 from pydicom import dcmread
 
@@ -24,12 +25,15 @@ class Viewer(QMainWindow):
             open_action = QAction(st.standardIcon(QStyle.SP_DialogOpenButton), 'Open DCM', self)
             open_action.setShortcut('Ctrl+O')
             open_action.setStatusTip('Open DCM file')
+            # noinspection PyUnresolvedReferences
             open_action.triggered.connect(self.open_dcm_file)
 
             printer_action = QAction(st.standardIcon(QStyle.SP_FileDialogDetailedView), 'Print image', self)
+            # noinspection PyUnresolvedReferences
             printer_action.triggered.connect(self.print_image)
 
             preview_action = QAction(st.standardIcon(QStyle.SP_FileDialogContentsView), 'Preview Print', self)
+            # noinspection PyUnresolvedReferences
             preview_action.triggered.connect(self.preview_print)
 
             self.statusBar()
@@ -76,32 +80,39 @@ class Viewer(QMainWindow):
             print(e)
 
     def print_image(self):
-        if self.current_pixmap:
+        if self.viewer.item(0):
             printer = QtPrintSupport.QPrinter()
             dialog = QtPrintSupport.QPrintDialog(printer, self)
             dialog.setWindowTitle('Print image')
             if dialog.exec_() == dialog.Accepted:
+                self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer), QPoint(0, 0))
+                '''
                 painter = QPainter()
                 painter.begin(printer)
                 p = QPoint(0, 0)
                 r = QRect(150, 100, 300, 300)
                 painter.drawPixmap(p, self.current_pixmap, r)
                 painter.end()
+                '''
 
     def preview_print(self):
-        if self.current_pixmap:
+        if self.viewer.item(0):
             dialog = QtPrintSupport.QPrintPreviewDialog()
             dialog.paintRequested.connect(self.handle_paint_request)
             dialog.exec_()
 
-    def handle_paint_request(self, printer):
+    def handle_paint_request(self, printer: QPrinter):
+        printer.setResolution(300)
+        printer.setColorMode(QPrinter.ColorMode.GrayScale)
+
         painter = QPainter()
         painter.begin(printer)
         p = QPoint(0, 0)
-        r = QRect(0, 95, 800, 760)
-        painter.drawPixmap(p, self.current_pixmap, r)
+        painter.drawPixmap(p, self.viewer.itemWidget(self.viewer.item(0)).pixmap)
         painter.end()
         # self.view.render(painter) # for components
+        # self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer), QPoint(0, 0))
+        # self.viewer.viewport().render(QPainter(printer), QPoint(0, 0))
 
 
 if __name__ == '__main__':

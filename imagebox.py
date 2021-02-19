@@ -1,12 +1,14 @@
-from PySide2.QtCore import Qt, Signal, Slot, QEvent, QModelIndex
-from PySide2.QtGui import QPixmap, QTabletEvent, QShowEvent
+from PySide2.QtCore import Qt, Signal, Slot
+from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import (QGroupBox, QVBoxLayout, QLabel, QLineEdit,
                                QListWidget, QListWidgetItem)
 from pydicom import Dataset
 
 from getusimage import get_qpxmap_from
 
-IMAGE_LIST_SPACING = 5 # Spacing between ImageBox'es in ImageList TODO: Get this from settings
+# Spacing between ImageBoxes in ImageList TODO: Get this from settings
+IMAGE_LIST_SPACING = 5
+
 
 class ImageList(QListWidget):
     my_signal = Signal(Dataset)
@@ -17,13 +19,13 @@ class ImageList(QListWidget):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setSpacing(IMAGE_LIST_SPACING)
-
+        self.setDragDropMode(QListWidget.DragDropMode.NoDragDrop)
+        # noinspection PyUnresolvedReferences
         self.my_signal.connect(self.my_signal_handler)
 
     @Slot(Dataset)
-    def my_signal_handler(self, ds):
-        # 400px - target width of image for ImageBox TODO: Get this from settings
-        box = ImageBox(get_qpxmap_from(ds, 400),
+    def my_signal_handler(self, ds: Dataset):
+        box = ImageBox(get_qpxmap_from(ds),
                        ds.file_meta['MediaStorageSOPInstanceUID'].value)
         view_item = QListWidgetItem(self)
         view_item.setSizeHint(box.size())
@@ -31,10 +33,11 @@ class ImageList(QListWidget):
         self.setItemWidget(view_item, box)
 
     def dataset_handler(self, ds):
+        # noinspection PyUnresolvedReferences
         self.my_signal.emit(ds)
 
     def resizeEvent(self, event):
-        # TODO: Ugly
+        # TODO: Awful decision. Refresh if window resized
         self.takeItem(self.row(QListWidgetItem(self)))
         # self.currentRowChanged.emit(-1)
         # self.itemChanged.emit(self.item(0))
@@ -43,7 +46,9 @@ class ImageList(QListWidget):
 
 
 class ImageBox(QGroupBox):
-    """ TODO Refresh if window resized"""
+
+    # 400px - target width of image for ImageBox TODO: Get this from settings
+    VIEW_IMAGE_WIDTH = 400
 
     def __init__(self, pixmap: QPixmap, title):
         super().__init__()
@@ -52,11 +57,15 @@ class ImageBox(QGroupBox):
         self.setChecked(True)
         self.setTitle(title)
 
+        self.pixmap = pixmap
+
         self.img = QLabel()
-        self.img.resize(pixmap.size())
-        self.pixmap = pixmap.scaled(self.img.size(), Qt.KeepAspectRatio,
-                                    Qt.SmoothTransformation)
-        self.img.setPixmap(self.pixmap)
+        ratio = self.VIEW_IMAGE_WIDTH / float(pixmap.width())
+        height = int(float(pixmap.height()) * float(ratio))
+        self.img.resize(self.VIEW_IMAGE_WIDTH, height)
+        self.img.setPixmap(self.pixmap.scaled(self.img.size(),
+                                              Qt.KeepAspectRatio,
+                                              Qt.SmoothTransformation))
 
         self.txt = QLineEdit(self)
 

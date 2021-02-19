@@ -1,7 +1,6 @@
-from PIL import Image, ImageFilter
 import numpy
+from PIL import Image
 from PySide2.QtGui import QImage, QPixmap
-
 from pydicom import dcmread
 
 
@@ -59,28 +58,29 @@ def _get_pil_image(dataset):
     return image
 
 
-def _process(image, width):
+def _process(image):
     """
     Crop and calibrate image
     :type image: PIL.Image
     """
 
-    crop_rect = (0, 95, 800, 760)
+    crop_rect = (0, 95, 800, 760)  # TODO Get this from settings
     image = image.crop(crop_rect)  # left, top, right, bottom
 
     # image.thumbnail(image_size, Image.LANCZOS) - damage image!
+    '''
     basewidth = width
     wpercent = (basewidth / float(image.size[0]))
     hsize = int((float(image.size[1]) * float(wpercent)))
     image = image.resize((basewidth, hsize), Image.LANCZOS)
-
+    '''
     return image
 
 
-def get_qpxmap_from(dataset, width):
+def get_qpxmap_from(dataset):
     """ Return QT5 QPixmap from DICOM dataset"""
     image = _get_pil_image(dataset)
-    image = _process(image, width)
+    image = _process(image)
 
     # im = im.convert('RGBA')
     # data = im.tobytes("raw","RGBA")
@@ -93,5 +93,5 @@ def get_qpxmap_from(dataset, width):
 
 if __name__ == '__main__':
     im = _get_pil_image(dcmread('./test_scu/dcm/27.dcm'))
-    im = _process(im, 640)
+    im = _process(im)
     im.save('./27.jpg')
