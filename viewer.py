@@ -7,8 +7,7 @@ from PySide2.QtPrintSupport import QPrinter
 from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QFileDialog, QStyle, QCommonStyle)
 from pydicom import dcmread
 
-from imagebox import ImageList
-from scp_server import SCPServer
+from imagebox import DicomImageList
 
 
 class Viewer(QMainWindow):
@@ -17,7 +16,7 @@ class Viewer(QMainWindow):
         try:
             super().__init__()
 
-            self.viewer = ImageList()
+            self.viewer = DicomImageList()
             self.setCentralWidget(self.viewer)
 
             st = QCommonStyle()
@@ -57,16 +56,6 @@ class Viewer(QMainWindow):
             self.setWindowTitle('Main window')
             self.show()
 
-            # --------------------------
-            # Init and Start SCP server
-            # --------------------------
-
-            self.current_pixmap = None
-            self.scp = SCPServer(self.viewer.dataset_handler)
-            self.scp.start()
-
-            # --------------------------
-
         except Exception as e:
             print(e)
             sys.exit()
@@ -75,7 +64,7 @@ class Viewer(QMainWindow):
         try:
             fn = QFileDialog.getOpenFileName(self, 'Выбрать DICOM-файл', '', '*.dcm')[0]
             if fn:
-                self.viewer.dataset_handler(dcmread(fn))
+                self.viewer.store_signal_handler(dcmread(fn))
         except Exception as e:
             print(e)
 
