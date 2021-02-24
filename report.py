@@ -2,7 +2,8 @@ from PySide2.QtCore import QPoint, Qt
 from PySide2.QtGui import QPainter
 from PySide2.QtPrintSupport import QPrinter
 
-from imagebox import DicomImageList, ImageBox
+from dicomimagelist import DicomImageList
+from imagebox import ImageBox
 
 MIN_ITEM_WIDTH = 1000
 MIN_ITEM_HEIGHT = 1000

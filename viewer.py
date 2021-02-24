@@ -7,7 +7,7 @@ from PySide2.QtPrintSupport import QPrinter
 from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QFileDialog, QStyle, QCommonStyle)
 from pydicom import dcmread
 
-from imagebox import DicomImageList
+from dicomimagelist import DicomImageList
 from report import Report
 
 
@@ -38,20 +38,20 @@ class Viewer(QMainWindow):
 
             self.statusBar()
 
-            menubar = self.menuBar()
-            file_menu = menubar.addMenu('&File')
+            menu_bar = self.menuBar()
+            file_menu = menu_bar.addMenu('&File')
             file_menu.addAction(open_action)
-            print_menu = menubar.addMenu('&Print')
+            print_menu = menu_bar.addMenu('&Print')
             print_menu.addAction(printer_action)
-            preview_menu = menubar.addMenu('Pre&view')
+            preview_menu = menu_bar.addMenu('Pre&view')
             preview_menu.addAction(preview_action)
 
             toolbar = self.addToolBar('Open')
             toolbar.addAction(open_action)
-            printtool = self.addToolBar('Print')
-            printtool.addAction(printer_action)
-            previewtool = self.addToolBar('Preview')
-            previewtool.addAction(preview_action)
+            print_tool = self.addToolBar('Print')
+            print_tool.addAction(printer_action)
+            preview_tool = self.addToolBar('Preview')
+            preview_tool.addAction(preview_action)
 
             self.setGeometry(300, 300, 600, 400)  # TODO: Get this from settings
             self.setWindowTitle('Main window')
