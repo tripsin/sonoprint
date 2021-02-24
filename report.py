@@ -40,7 +40,10 @@ class Report:
         point = self._get_item_position()
         image: ImageBox
         for image in self.images.box_list():
-            new_image = image.pixmap.scaled(self.item_width - 10, self.item_height - 10,
-                                            Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            painter.drawPixmap(next(point), new_image)
+            if image.isChecked():
+                new_image = image.pixmap.scaled(self.item_width - 10,
+                                                self.item_height - 10,
+                                                Qt.KeepAspectRatio,
+                                                Qt.SmoothTransformation)
+                painter.drawPixmap(next(point), new_image)
         painter.end()
