@@ -70,6 +70,9 @@ class DicomImageList(QListWidget):
         # TODO: Awful decision. Refresh if window resized
         self.takeItem(self.row(QListWidgetItem(self)))
 
+    def box_list(self):
+        return [self.itemWidget(self.item(i)) for i in range(self.count())]
+
 
 class ImageBox(QGroupBox):
     # 400px - target width of image for ImageBox TODO: Get this from settings
@@ -83,6 +86,7 @@ class ImageBox(QGroupBox):
 
         self.dataset = ds
 
+        # noinspection PyUnresolvedReferences
         title = ('{}: ({}-{}) Датчик: {}:{}'
                  .format(str(self.dataset['InstanceNumber'].value),
                          str(self.dataset['InstanceCreationDate'].value),

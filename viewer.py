@@ -8,6 +8,7 @@ from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QFileDialog, 
 from pydicom import dcmread
 
 from imagebox import DicomImageList
+from report import Report
 
 
 class Viewer(QMainWindow):
@@ -91,14 +92,10 @@ class Viewer(QMainWindow):
             dialog.exec_()
 
     def handle_paint_request(self, printer: QPrinter):
-        printer.setResolution(300)
-        printer.setColorMode(QPrinter.ColorMode.GrayScale)
-
-        painter = QPainter()
-        painter.begin(printer)
-        p = QPoint(0, 0)
-        painter.drawPixmap(p, self.viewer.itemWidget(self.viewer.item(0)).pixmap)
-        painter.end()
+        if printer:
+            report = Report(printer, self.viewer)
+            report.make()
+        # self.viewer.report(printer)
         # self.view.render(painter) # for components
         # self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer), QPoint(0, 0))
         # self.viewer.viewport().render(QPainter(printer), QPoint(0, 0))
