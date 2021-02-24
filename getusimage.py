@@ -5,8 +5,11 @@ from pydicom import dcmread
 
 
 def _get_lut_value(data, window, level):
-    """Apply the RGB Look-Up Table for the given
-       data and window/level value."""
+    """
+    Apply the RGB Look-Up Table for the given
+    data and window/level value.
+    Magic code from pydicom example. Do not touch!
+    """
     return numpy.piecewise(data,
                            [data <= (level - 0.5 - (window - 1) / 2),
                             data > (level - 0.5 + (window - 1) / 2)],
@@ -15,7 +18,10 @@ def _get_lut_value(data, window, level):
 
 
 def _get_pil_image(dataset):
-    """Get Image object from Python Imaging Library(PIL)"""
+    """
+    Get Image object from Python Imaging Library(PIL)
+    Magic code from pydicom example. Do not touch!
+    """
     if 'PixelData' not in dataset:
         raise TypeError("Cannot show image -- DICOM dataset does not have "
                         "pixel data")
@@ -69,6 +75,7 @@ def _process(image):
 
     # image.thumbnail(image_size, Image.LANCZOS) - damage image!
     '''
+    # code for image resizing. not needed
     basewidth = width
     wpercent = (basewidth / float(image.size[0]))
     hsize = int((float(image.size[1]) * float(wpercent)))

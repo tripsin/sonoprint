@@ -11,10 +11,13 @@ class ImageBox(QGroupBox):
     def __init__(self, pixmap: QPixmap, ds: Dataset):
         super().__init__()
 
+        self.dataset = ds
+
         self.setCheckable(True)
         self.setChecked(True)
-
-        self.dataset = ds
+        font = self.font()
+        font.setPixelSize(16)
+        self.setFont(font)
 
         # noinspection PyUnresolvedReferences
         title = ('{}: ({}-{}) Датчик: {}:{}'
@@ -51,8 +54,5 @@ class ImageBox(QGroupBox):
                             self.img.height() + self.txt.height() +
                             (self.layout.spacing() * 3))
 
-    def enable(self):
-        self.setChecked(True)
-
-    def disable(self):
-        self.setChecked(False)
+    def change(self):
+        self.setChecked(not self.isChecked())

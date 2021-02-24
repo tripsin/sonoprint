@@ -4,7 +4,8 @@ from PySide2 import QtPrintSupport
 from PySide2.QtCore import QPoint
 from PySide2.QtGui import QPainter
 from PySide2.QtPrintSupport import QPrinter
-from PySide2.QtWidgets import (QMainWindow, QAction, QApplication, QFileDialog, QStyle, QCommonStyle)
+from PySide2.QtWidgets import (QMainWindow, QAction, QApplication,
+                               QFileDialog, QStyle, QCommonStyle)
 from pydicom import dcmread
 
 from dicomimagelist import DicomImageList
@@ -22,17 +23,20 @@ class Viewer(QMainWindow):
 
             st = QCommonStyle()
 
-            open_action = QAction(st.standardIcon(QStyle.SP_DialogOpenButton), 'Open DCM', self)
+            open_action = QAction(st.standardIcon(QStyle.SP_DialogOpenButton),
+                                  'Open DCM', self)
             open_action.setShortcut('Ctrl+O')
             open_action.setStatusTip('Open DCM file')
             # noinspection PyUnresolvedReferences
             open_action.triggered.connect(self.open_dcm_file)
 
-            printer_action = QAction(st.standardIcon(QStyle.SP_FileDialogDetailedView), 'Print image', self)
+            printer_action = QAction(st.standardIcon(QStyle.SP_FileDialogDetailedView),
+                                     'Print image', self)
             # noinspection PyUnresolvedReferences
             printer_action.triggered.connect(self.print_image)
 
-            preview_action = QAction(st.standardIcon(QStyle.SP_FileDialogContentsView), 'Preview Print', self)
+            preview_action = QAction(st.standardIcon(QStyle.SP_FileDialogContentsView),
+                                     'Preview Print', self)
             # noinspection PyUnresolvedReferences
             preview_action.triggered.connect(self.preview_print)
 
@@ -63,9 +67,13 @@ class Viewer(QMainWindow):
 
     def open_dcm_file(self):
         try:
-            fn = QFileDialog.getOpenFileName(self, 'Выбрать DICOM-файл', '', '*.dcm')[0]
-            if fn:
-                self.viewer.store_signal_handler(dcmread(fn))
+            dialog = QFileDialog()
+            result = dialog.getOpenFileNames(self, 'Выбрать DICOM-файлы', '',
+                                             '*.dcm')
+            files = result[0]
+            if files:
+                for fn in files:
+                    self.viewer.store_signal_handler(dcmread(fn))
         except Exception as e:
             print(e)
 
@@ -75,15 +83,8 @@ class Viewer(QMainWindow):
             dialog = QtPrintSupport.QPrintDialog(printer, self)
             dialog.setWindowTitle('Print image')
             if dialog.exec_() == dialog.Accepted:
-                self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer), QPoint(0, 0))
-                '''
-                painter = QPainter()
-                painter.begin(printer)
-                p = QPoint(0, 0)
-                r = QRect(150, 100, 300, 300)
-                painter.drawPixmap(p, self.current_pixmap, r)
-                painter.end()
-                '''
+                self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer),
+                                                                   QPoint(0, 0))
 
     def preview_print(self):
         if self.viewer.item(0):
@@ -95,10 +96,6 @@ class Viewer(QMainWindow):
         if printer:
             report = Report(printer, self.viewer)
             report.make()
-        # self.viewer.report(printer)
-        # self.view.render(painter) # for components
-        # self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer), QPoint(0, 0))
-        # self.viewer.viewport().render(QPainter(printer), QPoint(0, 0))
 
 
 if __name__ == '__main__':

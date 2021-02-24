@@ -40,11 +40,16 @@ class Report:
         painter.begin(self.printer)
         point = self._get_item_position()
         image: ImageBox
-        for image in self.images.box_list():
+        for image in self.images.list_():
             if image.isChecked():
                 new_image = image.pixmap.scaled(self.item_width - 10,
                                                 self.item_height - 10,
                                                 Qt.KeepAspectRatio,
                                                 Qt.SmoothTransformation)
                 painter.drawPixmap(next(point), new_image)
+                # Example code:
+                # self.viewer.report(printer)
+                # self.view.render(painter) # for components
+                # self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer), QPoint(0, 0))
+                # self.viewer.viewport().render(QPainter(printer), QPoint(0, 0))
         painter.end()

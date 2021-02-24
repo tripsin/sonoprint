@@ -1,6 +1,7 @@
 import sys
 
 from PySide2.QtCore import Signal, Qt, Slot
+from PySide2.QtGui import QMouseEvent
 from PySide2.QtWidgets import QListWidget, QListWidgetItem
 from pydicom import Dataset
 from pydicom.uid import ImplicitVRLittleEndian
@@ -13,6 +14,7 @@ from tools import try_port
 
 # Spacing between ImageBoxes in ImageList TODO: Get this from settings
 IMAGE_LIST_SPACING = 5
+DICOM_SCP_PORT = 104  # TODO: Get this from settings
 
 
 class DicomImageList(QListWidget):
@@ -37,7 +39,8 @@ class DicomImageList(QListWidget):
         self.ae.add_supported_context('1.2.840.10008.5.1.4.1.1.6.1',
                                       ImplicitVRLittleEndian)
         if try_port(104):
-            self.ae.start_server(('', 104), block=False, evt_handlers=self.__handlers)
+            self.ae.start_server(('', DICOM_SCP_PORT), block=False,
+                                 evt_handlers=self.__handlers)
         else:
             sys.exit()
         # --------------------------
@@ -69,5 +72,10 @@ class DicomImageList(QListWidget):
         # TODO: Awful decision. Refresh if window resized
         self.takeItem(self.row(QListWidgetItem(self)))
 
-    def box_list(self):
+    def list_(self):
         return [self.itemWidget(self.item(i)) for i in range(self.count())]
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent):
+        item = self.itemAt(event.pos())
+        if item:
+            self.itemWidget(item).change()
