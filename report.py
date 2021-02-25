@@ -23,8 +23,15 @@ class Report:
 
         self.columns = self.paper_width // MIN_ITEM_WIDTH
         self.rows = self.paper_height // MIN_ITEM_HEIGHT
-        self.item_width = int(self.paper_width / self.columns)
-        self.item_height = int(self.paper_height / self.rows)
+
+        if (self.columns == 0) or (self.rows == 0):
+            self.columns = 1
+            self.rows = 1
+            self.item_width = self.paper_width
+            self.item_height = self.paper_height
+        else:
+            self.item_width = int(self.paper_width / self.columns)
+            self.item_height = int(self.paper_height / self.rows)
 
     def _get_item_position(self):
         while True:
@@ -53,3 +60,4 @@ class Report:
                 # self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer), QPoint(0, 0))
                 # self.viewer.viewport().render(QPainter(printer), QPoint(0, 0))
         painter.end()
+
