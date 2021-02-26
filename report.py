@@ -43,21 +43,34 @@ class Report:
             self.printer.newPage()
 
     def make(self):
+
         painter = QPainter()
         painter.begin(self.printer)
         point = self._get_item_position()
+
+        def _draw_top():
+            pass
+
+        def _draw_bottom():
+            pass
+
+        def _draw_image_box(im: ImageBox, p: QPoint):
+            scaled_image = im.pixmap.scaled(self.item_width - 10,
+                                            self.item_height - 10,
+                                            Qt.KeepAspectRatio,
+                                            Qt.SmoothTransformation)
+            painter.drawPixmap(p, scaled_image)
+            painter.drawText(QPoint(p.x(),
+                                    p.y() + scaled_image.height() + 50),
+                             im.txt.text())
+
+        _draw_top()
+
         image: ImageBox
         for image in self.images.list_():
             if image.isChecked():
-                new_image = image.pixmap.scaled(self.item_width - 10,
-                                                self.item_height - 10,
-                                                Qt.KeepAspectRatio,
-                                                Qt.SmoothTransformation)
-                painter.drawPixmap(next(point), new_image)
-                # Example code:
-                # self.viewer.report(printer)
-                # self.view.render(painter) # for components
-                # self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer), QPoint(0, 0))
-                # self.viewer.viewport().render(QPainter(printer), QPoint(0, 0))
-        painter.end()
+                _draw_image_box(image, next(point))
 
+        _draw_bottom()
+
+        painter.end()
