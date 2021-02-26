@@ -72,8 +72,9 @@ class DicomImageList(QListWidget):
         # TODO: Awful decision. Refresh if window resized
         self.takeItem(self.row(QListWidgetItem(self)))
 
-    def list_(self):
-        return [self.itemWidget(self.item(i)) for i in range(self.count())]
+    def widget_iterator(self):
+        for i in range(self.count()):
+            yield self.itemWidget(self.item(i))
 
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         item = self.itemAt(event.pos())
