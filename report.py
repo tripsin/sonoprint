@@ -8,10 +8,10 @@ from imagebox import ImageBox
 # dimensions are in millimeters
 MIN_ITEM_WIDTH = 80
 MIN_ITEM_HEIGHT = 80
-TOP_HEIGHT = 15
-BOTTOM_HEIGHT = 15
-LEFT_MARGIN = 20
-RIGHT_MARGIN = 8
+TOP_HEIGHT = 10
+BOTTOM_HEIGHT = 10
+LEFT_MARGIN = 10
+RIGHT_MARGIN = 0
 BOX_MARGINS = 2
 
 PRINTER_DPI = 300
@@ -62,11 +62,16 @@ class Report:
         painter.begin(self.printer)
 
         def _draw_top():
-            painter.drawLine(0, mm_to_pix(TOP_HEIGHT), mm_to_pix(80), mm_to_pix(TOP_HEIGHT))
-            pass
+            painter.drawLine(self.center_rect.left(),
+                             self.center_rect.top() - mm_to_pix(1),
+                             self.center_rect.right(),
+                             self.center_rect.top() - mm_to_pix(1))
 
         def _draw_bottom():
-            pass
+            painter.drawLine(self.center_rect.left(),
+                             self.center_rect.bottom() + mm_to_pix(1),
+                             self.center_rect.right(),
+                             self.center_rect.bottom() + mm_to_pix(1))
 
         def _get_item_position():
             while True:
