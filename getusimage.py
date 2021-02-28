@@ -71,7 +71,7 @@ def _process(image):
     """
 
     crop_rect = (0, 95, 800, 760)  # TODO Get this from settings
-    image = image.crop(crop_rect)  # left, top, right, bottom
+    # image = image.crop(crop_rect)  # left, top, right, bottom
 
     # image.thumbnail(image_size, Image.LANCZOS) - damage image!
     '''

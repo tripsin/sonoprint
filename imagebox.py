@@ -1,32 +1,26 @@
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import (QGroupBox, QVBoxLayout, QLabel, QLineEdit)
-from pydicom import Dataset
 
 
 class ImageBox(QGroupBox):
     # 400px - target width of image for ImageBox TODO: Get this from settings
     VIEW_IMAGE_WIDTH = 400
 
-    def __init__(self, pixmap: QPixmap, ds: Dataset):
+    def set_image_info(self, s: str):
+        self.image_info = s
+        self.setTitle(s)
+
+    def __init__(self, pixmap: QPixmap):
         super().__init__()
 
-        self.dataset = ds
+        self.image_info = 'empty'
 
         self.setCheckable(True)
         self.setChecked(True)
         font = self.font()
-        font.setPixelSize(16)
+        font.setPixelSize(12)
         self.setFont(font)
-
-        # noinspection PyUnresolvedReferences
-        title = ('{}: ({}-{}) Датчик: {}:{}'
-                 .format(str(self.dataset['InstanceNumber'].value),
-                         str(self.dataset['InstanceCreationDate'].value),
-                         str(self.dataset['InstanceCreationTime'].value),
-                         str(self.dataset['ManufacturerModelName'].value),
-                         str(self.dataset['TransducerData'].value[0])))
-        self.setTitle(title)
 
         self.pixmap = pixmap
 
