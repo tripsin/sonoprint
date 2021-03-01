@@ -1,5 +1,5 @@
-from PySide2.QtCore import QPoint, Qt, QRect
-from PySide2.QtGui import QPainter
+from PySide2.QtCore import QPoint, Qt, QRect, QSize
+from PySide2.QtGui import QPainter, QFont
 from PySide2.QtPrintSupport import QPrinter
 
 from dicomimagelist import DicomImageList
@@ -22,13 +22,14 @@ def mm_to_pix(mm: int):
 
 
 class Report:
-    def __init__(self, printer: QPrinter, images: DicomImageList):
+    def __init__(self, printer: QPrinter, viewer: DicomImageList):
         self.printer = printer
         self.printer.setResolution(PRINTER_DPI)
         self.printer.setColorMode(QPrinter.ColorMode.GrayScale)
         self.printer.setWinPageSize(QPrinter.A4)
 
-        self.images = images.widget_iterator()
+        self.viewer = viewer
+        self.images = viewer.widget_iterator()
 
         self.paper_width = mm_to_pix(printer.widthMM())
         self.paper_height = mm_to_pix(printer.heightMM())
@@ -73,6 +74,18 @@ class Report:
                              self.center_rect.right(),
                              self.center_rect.bottom() + mm_to_pix(1))
 
+            target_rect = QRect(QPoint(self.center_rect.left(),
+                                       self.center_rect.bottom() + mm_to_pix(2)),
+                                QSize(self.center_rect.width(),
+                                      mm_to_pix(BOTTOM_HEIGHT)))
+
+            f = QFont('Courier', 10)
+            painter.setFont(f)
+            br = painter.boundingRect(target_rect, Qt.AlignRight | Qt.AlignTop, self.viewer.device_info)
+            if target_rect.intersected(br) != br:
+                print('Out bounds!')
+            painter.drawText(target_rect, Qt.AlignRight | Qt.AlignTop, self.viewer.device_info)
+
         def _get_item_position():
             while True:
                 _draw_top()
@@ -85,17 +98,46 @@ class Report:
                 self.printer.newPage()
 
         def _draw_image_box(im: ImageBox, p: QPoint):
-            box_rect = self._item_rect(p)
-            image_rect = QRect(box_rect)
-            image_rect.setHeight(image_rect.height() - 50)
+
+            box_rect = QRect(p.x() + mm_to_pix(BOX_MARGINS),
+                             p.y() + mm_to_pix(BOX_MARGINS),
+                             self.item_width - mm_to_pix(BOX_MARGINS * 2),
+                             self.item_height - mm_to_pix(BOX_MARGINS * 2))
+
+            header_rect = QRect(box_rect.left(),
+                                box_rect.top(),
+                                box_rect.width(), 1)
+
+            painter.setFont(QFont('Courier', 10))
+            br = painter.boundingRect(header_rect,
+                                      Qt.AlignLeft | Qt.AlignBottom,
+                                      im.image_info)
+            header_rect.setHeight(br.height())
+            painter.drawText(header_rect,
+                             Qt.AlignLeft | Qt.AlignBottom,
+                             im.image_info)
+
             scaled_image = im.pixmap.scaled(box_rect.width(),
                                             box_rect.height(),
                                             Qt.KeepAspectRatio,
                                             Qt.SmoothTransformation)
-            painter.drawPixmap(box_rect.topLeft(), scaled_image)
+            image_rect = QRect(box_rect.left(),
+                               box_rect.top() + header_rect.height() + 1,
+                               box_rect.width(),
+                               scaled_image.height())
+            painter.drawPixmap(image_rect, scaled_image)
 
-            painter.drawText(QPoint(p.x(),
-                                    p.y() + scaled_image.height() + 50),
+            comment_rect = QRect(box_rect.left(),
+                                 image_rect.top() + image_rect.height() + 1,
+                                 box_rect.width(),
+                                 box_rect.bottom() - image_rect.bottom())
+            painter.setFont(QFont('Arial', 12))
+            br = painter.boundingRect(comment_rect,
+                                      Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap,
+                                      im.txt.text())
+            comment_rect.setHeight(br.height())
+            painter.drawText(comment_rect,
+                             Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap,
                              im.txt.text())
 
         point = _get_item_position()
