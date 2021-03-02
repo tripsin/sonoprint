@@ -9,7 +9,7 @@ from PySide2.QtWidgets import (QMainWindow, QAction, QApplication,
 from pydicom import dcmread
 
 from dicomimagelist import DicomImageList
-from report import Report
+import report
 
 
 class Viewer(QMainWindow):
@@ -94,8 +94,7 @@ class Viewer(QMainWindow):
 
     def handle_paint_request(self, printer: QPrinter):
         if printer:
-            report = Report(printer, self.viewer)
-            report.make()
+            report.make(printer, self.viewer)
 
 
 if __name__ == '__main__':
