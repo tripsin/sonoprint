@@ -32,11 +32,11 @@ class ImageBox(QGroupBox):
                                               Qt.KeepAspectRatio,
                                               Qt.SmoothTransformation))
 
-        self.txt = QLineEdit(self)
+        self.comment = QLineEdit(self)
 
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(self.img)
-        self.layout.addWidget(self.txt)
+        self.layout.addWidget(self.comment)
         self.setLayout(self.layout)
 
         self.setFixedWidth(self.contentsMargins().left() +
@@ -45,7 +45,7 @@ class ImageBox(QGroupBox):
                            (self.layout.spacing() * 2))
         self.setFixedHeight(self.contentsMargins().top() +
                             self.contentsMargins().bottom() +
-                            self.img.height() + self.txt.height() +
+                            self.img.height() + self.comment.height() +
                             (self.layout.spacing() * 3))
 
     def change(self):

@@ -9,9 +9,8 @@ from pydicom.uid import ImplicitVRLittleEndian
 from pynetdicom import AE, evt
 from pynetdicom.events import Event
 
-from getusimage import get_qpxmap_from
+from tools import get_pixmap_from, try_port, decode_rus
 from imagebox import ImageBox
-from tools import try_port, decode_rus
 
 # Spacing between ImageBoxes in ImageList TODO: Get this from settings
 IMAGE_LIST_SPACING = 5
@@ -68,24 +67,21 @@ class DicomImageList(QListWidget):
 
     def get_dicom_info(self, ds: Dataset):
 
-        if not self.clinic:
-            self.clinic = 'Clinic: {}'. \
-                format(decode_rus(ds.InstitutionName, ds))
+        self.clinic = 'Clinic: {}'. \
+            format(decode_rus(ds.InstitutionName, ds))
 
-        if not self.study_info:
-            sd = ds.StudyDate
-            st = ds.StudyTime
-            dd = datetime.strptime('{} {}'.format(sd, st), '%Y%m%d %H%M%S')
-            self.study_info = 'Patient ID: {}, Study time: {}'. \
-                format(ds.PatientID,
-                       dd.strftime('%d.%m.%Y %H:%M'))
+        sd = ds.StudyDate
+        st = ds.StudyTime
+        dd = datetime.strptime('{} {}'.format(sd, st), '%Y%m%d %H%M%S')
+        self.study_info = 'Patient ID: {}, Study time: {}'. \
+            format(ds.PatientID,
+                   dd.strftime('%d.%m.%Y %H:%M'))
 
-        if not self.device_info:
-            self.device_info = 'Device: {} {} SN:{} firmware version: {}'. \
-                format(ds.Manufacturer,
-                       ds.ManufacturerModelName,
-                       ds.DeviceSerialNumber,
-                       ds.SoftwareVersions)
+        self.device_info = 'Device: {} {} SN:{} firmware version: {}'. \
+            format(ds.Manufacturer,
+                   ds.ManufacturerModelName,
+                   ds.DeviceSerialNumber,
+                   ds.SoftwareVersions)
 
         self.dicom_info_empty = False
 
@@ -95,7 +91,7 @@ class DicomImageList(QListWidget):
         if self.dicom_info_empty:
             self.get_dicom_info(ds)
 
-        box = ImageBox(get_qpxmap_from(ds))
+        box = ImageBox(get_pixmap_from(ds))
         ict = datetime.strptime(ds.InstanceCreationTime, '%H%M%S').time()
         box.set_image_info('№{} at {}, sensor: {}, {}'.
                            format(ds.InstanceNumber,

@@ -70,9 +70,10 @@ def make(printer: QPrinter, viewer: DicomImageList):
                                   mm_to_pix(BOTTOM_HEIGHT)))
 
         painter.setFont(QFont('Courier', 10))
-        painter.drawText(target_rect, Qt.AlignRight | Qt.AlignTop, viewer.device_info)
+        painter.drawText(target_rect, Qt.AlignRight | Qt.AlignTop,
+                         viewer.device_info)
 
-    def _draw_image_box(im: ImageBox, p: QPoint):
+    def _draw_image_box(box: ImageBox, p: QPoint):
         box_rect = QRect(p.x() + mm_to_pix(BOX_MARGINS),
                          p.y() + mm_to_pix(BOX_MARGINS),
                          item_width - mm_to_pix(BOX_MARGINS * 2),
@@ -85,16 +86,16 @@ def make(printer: QPrinter, viewer: DicomImageList):
         painter.setFont(QFont('Courier', 10))
         br = painter.boundingRect(header_rect,
                                   Qt.AlignLeft | Qt.AlignBottom,
-                                  im.image_info)
+                                  box.image_info)
         header_rect.setHeight(br.height())
         painter.drawText(header_rect,
                          Qt.AlignLeft | Qt.AlignBottom,
-                         im.image_info)
+                         box.image_info)
         # -------------------------- image printing ---------------------------
-        scaled_image = im.pixmap.scaled(box_rect.width(),
-                                        box_rect.height(),
-                                        Qt.KeepAspectRatio,
-                                        Qt.SmoothTransformation)
+        scaled_image = box.pixmap.scaled(box_rect.width(),
+                                         box_rect.height(),
+                                         Qt.KeepAspectRatio,
+                                         Qt.SmoothTransformation)
         image_rect = QRect(box_rect.left(),
                            box_rect.top() + header_rect.height() + 1,
                            box_rect.width(),
@@ -108,11 +109,11 @@ def make(printer: QPrinter, viewer: DicomImageList):
         painter.setFont(QFont('Arial', 12))
         br = painter.boundingRect(comment_rect,
                                   Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap,
-                                  im.txt.text())
+                                  box.comment.text())
         comment_rect.setHeight(br.height())
         painter.drawText(comment_rect,
                          Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap,
-                         im.txt.text())
+                         box.comment.text())
 
     def _page_engine():
         while True:
