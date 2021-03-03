@@ -73,7 +73,7 @@ def make(printer: QPrinter, viewer: DicomImageList):
         painter.drawText(target_rect, Qt.AlignRight | Qt.AlignTop,
                          viewer.device_info)
 
-    def _draw_image_box(box: ImageBox, p: QPoint):
+    def _draw_image_box(box_: ImageBox, p: QPoint):
         box_rect = QRect(p.x() + mm_to_pix(BOX_MARGINS),
                          p.y() + mm_to_pix(BOX_MARGINS),
                          item_width - mm_to_pix(BOX_MARGINS * 2),
@@ -82,20 +82,16 @@ def make(printer: QPrinter, viewer: DicomImageList):
         header_rect = QRect(box_rect.left(),
                             box_rect.top(),
                             box_rect.width(), 1)
-
         painter.setFont(QFont('Courier', 10))
-        br = painter.boundingRect(header_rect,
-                                  Qt.AlignLeft | Qt.AlignBottom,
-                                  box.image_info)
+        flags = Qt.AlignLeft | Qt.AlignBottom
+        br = painter.boundingRect(header_rect, flags, box_.image_info)
         header_rect.setHeight(br.height())
-        painter.drawText(header_rect,
-                         Qt.AlignLeft | Qt.AlignBottom,
-                         box.image_info)
+        painter.drawText(header_rect, flags, box_.image_info)
         # -------------------------- image printing ---------------------------
-        scaled_image = box.pixmap.scaled(box_rect.width(),
-                                         box_rect.height(),
-                                         Qt.KeepAspectRatio,
-                                         Qt.SmoothTransformation)
+        scaled_image = box_.pixmap.scaled(box_rect.width(),
+                                          box_rect.height(),
+                                          Qt.KeepAspectRatio,
+                                          Qt.SmoothTransformation)
         image_rect = QRect(box_rect.left(),
                            box_rect.top() + header_rect.height() + 1,
                            box_rect.width(),
@@ -107,13 +103,10 @@ def make(printer: QPrinter, viewer: DicomImageList):
                              box_rect.width(),
                              box_rect.bottom() - image_rect.bottom())
         painter.setFont(QFont('Arial', 12))
-        br = painter.boundingRect(comment_rect,
-                                  Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap,
-                                  box.comment.text())
+        flags = Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap
+        br = painter.boundingRect(comment_rect, flags, box_.comment.text())
         comment_rect.setHeight(br.height())
-        painter.drawText(comment_rect,
-                         Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap,
-                         box.comment.text())
+        painter.drawText(comment_rect, flags, box_.comment.text())
 
     def _page_engine():
         while True:
@@ -128,8 +121,8 @@ def make(printer: QPrinter, viewer: DicomImageList):
 
     painter.begin(printer)
     point = _page_engine()
-    image: ImageBox
-    for image in images:
-        if image.isChecked():
-            _draw_image_box(image, next(point))
+    box: ImageBox
+    for box in viewer.widget_iterator():
+        if box.isChecked():
+            _draw_image_box(box, next(point))
     painter.end()

@@ -57,7 +57,7 @@ class Viewer(QMainWindow):
             preview_tool = self.addToolBar('Preview')
             preview_tool.addAction(preview_action)
 
-            self.setGeometry(300, 300, 600, 400)  # TODO: Get this from settings
+            self.setGeometry(0, 0, 900, 800)  # TODO: Get this from settings
             self.setWindowTitle('Main window')
             self.show()
 
@@ -90,6 +90,7 @@ class Viewer(QMainWindow):
         if self.viewer.item(0):
             dialog = QtPrintSupport.QPrintPreviewDialog()
             dialog.paintRequested.connect(self.handle_paint_request)
+            dialog.showMaximized()
             dialog.exec_()
 
     def handle_paint_request(self, printer: QPrinter):
