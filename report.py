@@ -9,10 +9,10 @@ from imagebox import ImageBox
 MIN_ITEM_WIDTH = 80
 MIN_ITEM_HEIGHT = 80
 TOP_HEIGHT = 10
-BOTTOM_HEIGHT = 10
+BOTTOM_HEIGHT = 15
 LEFT_MARGIN = 10
-RIGHT_MARGIN = 0
-BOX_MARGINS = 2
+RIGHT_MARGIN = 3
+BOX_MARGINS = 1
 
 PRINTER_DPI = 300
 
@@ -25,8 +25,7 @@ def make(printer: QPrinter, viewer: DicomImageList):
     printer.setResolution(PRINTER_DPI)
     printer.setColorMode(QPrinter.ColorMode.GrayScale)
     printer.setWinPageSize(QPrinter.A4)
-
-    images = viewer.widget_iterator()
+    printer.setFullPage(True)
 
     painter = QPainter()
 
@@ -57,6 +56,16 @@ def make(printer: QPrinter, viewer: DicomImageList):
                          center_rect.top() - mm_to_pix(1),
                          center_rect.right(),
                          center_rect.top() - mm_to_pix(1))
+        top_rect = QRect(center_rect.left(),
+                         0,
+                         center_rect.width(),
+                         mm_to_pix(TOP_HEIGHT - 1))
+        painter.setFont(QFont('Arial Black', 10, QFont.Bold))
+        painter.drawText(top_rect, Qt.AlignRight | Qt.AlignBottom,
+                         viewer.clinic)
+        painter.setFont(QFont('Courier New', 8))
+        painter.drawText(top_rect, Qt.AlignLeft | Qt.AlignBottom,
+                         viewer.study_info)
 
     def _draw_bottom():
         painter.drawLine(center_rect.left(),
@@ -69,7 +78,7 @@ def make(printer: QPrinter, viewer: DicomImageList):
                             QSize(center_rect.width(),
                                   mm_to_pix(BOTTOM_HEIGHT)))
 
-        painter.setFont(QFont('Courier', 10))
+        painter.setFont(QFont('Courier New', 8))
         painter.drawText(target_rect, Qt.AlignRight | Qt.AlignTop,
                          viewer.device_info)
 
@@ -82,7 +91,7 @@ def make(printer: QPrinter, viewer: DicomImageList):
         header_rect = QRect(box_rect.left(),
                             box_rect.top(),
                             box_rect.width(), 1)
-        painter.setFont(QFont('Courier', 10))
+        painter.setFont(QFont('Courier New', 8))
         flags = Qt.AlignLeft | Qt.AlignBottom
         br = painter.boundingRect(header_rect, flags, box_.image_info)
         header_rect.setHeight(br.height())
@@ -102,7 +111,7 @@ def make(printer: QPrinter, viewer: DicomImageList):
                              image_rect.top() + image_rect.height() + 1,
                              box_rect.width(),
                              box_rect.bottom() - image_rect.bottom())
-        painter.setFont(QFont('Arial', 12))
+        painter.setFont(QFont('Arial', 10))
         flags = Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap
         br = painter.boundingRect(comment_rect, flags, box_.comment.text())
         comment_rect.setHeight(br.height())

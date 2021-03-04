@@ -67,7 +67,7 @@ class DicomImageList(QListWidget):
 
     def get_dicom_info(self, ds: Dataset):
 
-        self.clinic = 'Clinic: {}'. \
+        self.clinic = '{}  '. \
             format(decode_rus(ds.InstitutionName, ds))
 
         sd = ds.StudyDate
@@ -91,7 +91,7 @@ class DicomImageList(QListWidget):
         if self.dicom_info_empty:
             self.get_dicom_info(ds)
 
-        box = ImageBox(get_pixmap_from(ds))
+        box = ImageBox(get_pixmap_from(ds).copy(0, 100, 840, 668))
         ict = datetime.strptime(ds.InstanceCreationTime, '%H%M%S').time()
         box.set_image_info('№{} at {}, sensor: {}, {}'.
                            format(ds.InstanceNumber,
