@@ -100,13 +100,13 @@ class DicomImageList(QListWidget):
             self.reset()
             self.get_dicom_info(ds)
 
-        box = ImageBox(get_pixmap_from(ds).copy(0, 100, 840, 668))
         ict = datetime.strptime(ds.InstanceCreationTime, '%H%M%S').time()
-        box.set_image_info('№{} at {}, sensor: {}, {}'.
-                           format(ds.InstanceNumber,
-                                  ict,
-                                  ds.TransducerData[0],
-                                  decode_rus(ds.ProcessingFunction, ds)))
+        box = ImageBox(get_pixmap_from(ds).copy(0, 100, 840, 668),
+                       '№{} at {}, sensor: {}, {}'
+                       .format(ds.InstanceNumber,
+                               ict,
+                               ds.TransducerData[0],
+                               decode_rus(ds.ProcessingFunction, ds)))
 
         view_item = QListWidgetItem(self)
         view_item.setSizeHint(box.size())

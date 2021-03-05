@@ -7,14 +7,11 @@ class ImageBox(QGroupBox):
     # 400px - target width of image for ImageBox TODO: Get this from settings
     VIEW_IMAGE_WIDTH = 400
 
-    def set_image_info(self, s: str):
-        self.image_info = s
-        self.setTitle(s)
-
-    def __init__(self, pixmap: QPixmap):
+    def __init__(self, pixmap: QPixmap, image_info: str):
         super().__init__()
 
-        self.image_info = 'empty'
+        self.image_info = image_info
+        self.setTitle(image_info)
 
         self.setCheckable(True)
         self.setChecked(True)
