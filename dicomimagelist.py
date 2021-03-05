@@ -81,22 +81,12 @@ class DicomImageList(QListWidget):
                    ds.DeviceSerialNumber,
                    ds.SoftwareVersions)
 
-    def reset(self):
-        # redefining a parent class function
-        try:
-            while self.count() > 0:
-                self.removeItemWidget(self.item(0))
-                self.takeItem(0)
-        except AttributeError:
-            pass
-        super().reset()
-
     @Slot(Dataset)
     def store_signal_handler(self, ds: Dataset):
 
         if self.patient_id != ds.PatientID:
             # new study starting
-            self.reset()
+            self.clear()
             self.get_dicom_info(ds)
 
         ict = datetime.strptime(ds.InstanceCreationTime, '%H%M%S').time()
@@ -116,7 +106,7 @@ class DicomImageList(QListWidget):
         # TODO: Awful decision. Refresh if window resized
         self.takeItem(self.row(QListWidgetItem(self)))
 
-    def widget_iterator(self):
+    def boxes(self):
         for i in range(self.count()):
             yield self.itemWidget(self.item(i))
 

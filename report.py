@@ -131,7 +131,7 @@ def make(printer: QPrinter, viewer: DicomImageList):
     painter.begin(printer)
     point = _page_engine()
     box: ImageBox
-    for box in viewer.widget_iterator():
+    for box in viewer.boxes():
         if box.isChecked():
             _draw_image_box(box, next(point))
     painter.end()
