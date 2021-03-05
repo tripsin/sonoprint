@@ -28,10 +28,10 @@ class DicomImageList(QListWidget):
         self.setSpacing(IMAGE_LIST_SPACING)
         self.setDragDropMode(QListWidget.DragDropMode.NoDragDrop)
 
-        self.dicom_info_empty = True
         self.clinic = ''
         self.study_info = ''
         self.device_info = ''
+        self.patient_id = ''
 
         # --------------------------
         # Init and Start SCP server
@@ -70,11 +70,12 @@ class DicomImageList(QListWidget):
         self.clinic = '{}  '. \
             format(decode_rus(ds.InstitutionName, ds))
 
+        self.patient_id = ds.PatientID
         sd = ds.StudyDate
         st = ds.StudyTime
         dd = datetime.strptime('{} {}'.format(sd, st), '%Y%m%d %H%M%S')
         self.study_info = 'Patient ID: {}, Study time: {}'. \
-            format(ds.PatientID,
+            format(self.patient_id,
                    dd.strftime('%d.%m.%Y %H:%M'))
 
         self.device_info = 'Device: {} {} SN:{} firmware version: {}'. \
@@ -83,12 +84,20 @@ class DicomImageList(QListWidget):
                    ds.DeviceSerialNumber,
                    ds.SoftwareVersions)
 
-        self.dicom_info_empty = False
+    def reset(self):
+        # redefining a parent class function
+        for i in range(self.count()):
+            self.removeItemWidget(self.item(i))
+            self.takeItem(i)
+        self.takeItem(0)
+        super().reset()
 
     @Slot(Dataset)
     def store_signal_handler(self, ds: Dataset):
 
-        if self.dicom_info_empty:
+        if self.patient_id != ds.PatientID:
+            # new study starting
+            self.reset()
             self.get_dicom_info(ds)
 
         box = ImageBox(get_pixmap_from(ds).copy(0, 100, 840, 668))
