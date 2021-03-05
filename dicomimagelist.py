@@ -83,10 +83,12 @@ class DicomImageList(QListWidget):
 
     def reset(self):
         # redefining a parent class function
-        for i in range(self.count()):
-            self.removeItemWidget(self.item(i))
-            self.takeItem(i)
-        self.takeItem(0)
+        try:
+            while self.count() > 0:
+                self.removeItemWidget(self.item(0))
+                self.takeItem(0)
+        except AttributeError:
+            pass
         super().reset()
 
     @Slot(Dataset)
