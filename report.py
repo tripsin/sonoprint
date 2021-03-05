@@ -17,7 +17,7 @@ BOX_MARGINS = 1
 PRINTER_DPI = 300
 
 
-def mm_to_pix(mm: int):
+def mm_to_pix(mm: int) -> int:
     return int(mm * PRINTER_DPI / 25.4)
 
 
@@ -117,7 +117,7 @@ def make(printer: QPrinter, viewer: DicomImageList):
         comment_rect.setHeight(br.height())
         painter.drawText(comment_rect, flags, box_.comment.text())
 
-    def _page_engine():
+    def _page_engine() -> QPoint:
         while True:
             _draw_top()
             _draw_bottom()

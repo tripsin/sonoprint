@@ -47,6 +47,7 @@ class Viewer(QMainWindow):
             file_menu.addAction(open_action)
             print_menu = menu_bar.addMenu('&Print')
             print_menu.addAction(printer_action)
+            print_menu.setDisabled(True)
             preview_menu = menu_bar.addMenu('Pre&view')
             preview_menu.addAction(preview_action)
 
@@ -54,6 +55,7 @@ class Viewer(QMainWindow):
             toolbar.addAction(open_action)
             print_tool = self.addToolBar('Print')
             print_tool.addAction(printer_action)
+            print_tool.setDisabled(True)
             preview_tool = self.addToolBar('Preview')
             preview_tool.addAction(preview_action)
 

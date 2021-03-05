@@ -28,10 +28,7 @@ class DicomImageList(QListWidget):
         self.setSpacing(IMAGE_LIST_SPACING)
         self.setDragDropMode(QListWidget.DragDropMode.NoDragDrop)
 
-        self.clinic = ''
-        self.study_info = ''
-        self.device_info = ''
-        self.patient_id = ''
+        self.clinic = self.study_info = self.device_info = self.patient_id = ''
 
         # --------------------------
         # Init and Start SCP server
@@ -50,7 +47,7 @@ class DicomImageList(QListWidget):
             sys.exit()
         # --------------------------
 
-    def handle_c_store(self, event: Event):
+    def handle_c_store(self, event: Event) -> int:
         """
         Handle EVT_C_STORE events.
         https://ru.wikipedia.org/wiki/DICOM

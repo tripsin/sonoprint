@@ -21,7 +21,7 @@ def _get_lut_value(data, window, level):
                                                   (window - 1) + 0.5) * (255 - 0)])
 
 
-def _get_pil_image(dataset):
+def _get_pil_image(dataset: Dataset) -> Image:
     """
     Get Image object from Python Imaging Library(PIL)
     Magic code from pydicom example. Do not touch!
@@ -68,7 +68,7 @@ def _get_pil_image(dataset):
     return image
 
 
-def _process(image):
+def _process(image: Image) -> Image:
     """
     Crop and calibrate image
     :type image: PIL.Image
@@ -88,7 +88,7 @@ def _process(image):
     return image
 
 
-def get_pixmap_from(dataset):
+def get_pixmap_from(dataset: Dataset) -> QPixmap:
     """ Return QT5 QPixmap from DICOM dataset"""
     image = _get_pil_image(dataset)
     image = _process(image)
@@ -102,7 +102,7 @@ def get_pixmap_from(dataset):
     return QPixmap(qim)
 
 
-def try_port(port: int):
+def try_port(port: int) -> bool:
     """ Return True if *port* free """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     result = False
@@ -117,7 +117,7 @@ def try_port(port: int):
     return result
 
 
-def decode_rus(s: str, dataset: Dataset):
+def decode_rus(s: str, dataset: Dataset) -> str:
     # исправляем кодировку на русскую
     result = bytes(s, python_encoding[str(dataset.SpecificCharacterSet)]) \
         .decode(python_encoding['ISO_IR 144'])  # fro Russian
