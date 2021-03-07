@@ -2,8 +2,7 @@ from PySide2.QtCore import QPoint, Qt, QRect, QSize
 from PySide2.QtGui import QPainter, QFont
 from PySide2.QtPrintSupport import QPrinter
 
-from dicomimagelist import DicomImageList
-from imagebox import ImageBox
+from dicomimagelist import DicomImageList, ImageBox
 
 # dimensions are in millimeters
 MIN_ITEM_WIDTH = 80
