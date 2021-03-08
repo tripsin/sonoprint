@@ -1,8 +1,8 @@
 import sys
 
 from PySide2 import QtPrintSupport
-from PySide2.QtCore import QPoint
-from PySide2.QtGui import QPainter
+from PySide2.QtCore import QPoint, QRect
+from PySide2.QtGui import QPainter, QIcon
 from PySide2.QtPrintSupport import QPrinter
 from PySide2.QtWidgets import (QMainWindow, QAction, QApplication,
                                QFileDialog, QStyle, QCommonStyle)
@@ -10,6 +10,11 @@ from pydicom import dcmread
 
 from dicomimagelist import DicomImageList
 import report
+from settings import settings, unpack_int
+
+# loading settings
+MAIN_FORM_RECT = QRect(*unpack_int(settings.MAIN_FORM_RECT))
+# end (loading settings)
 
 
 class Viewer(QMainWindow):
@@ -20,7 +25,7 @@ class Viewer(QMainWindow):
 
             self.viewer = DicomImageList()
             self.setCentralWidget(self.viewer)
-
+            self.setWindowIcon(QIcon('./icons/us.svg'))
             st = QCommonStyle()
 
             open_action = QAction(st.standardIcon(QStyle.SP_DialogOpenButton),
@@ -35,7 +40,9 @@ class Viewer(QMainWindow):
             # noinspection PyUnresolvedReferences
             printer_action.triggered.connect(self.print_image)
 
-            preview_action = QAction(st.standardIcon(QStyle.SP_FileDialogContentsView),
+            # preview_action = QAction(st.standardIcon(QStyle.SP_FileDialogContentsView),
+            #                          'Preview Print', self)
+            preview_action = QAction(QIcon('./icons/document-print-preview.png'),
                                      'Preview Print', self)
             # noinspection PyUnresolvedReferences
             preview_action.triggered.connect(self.preview_print)
@@ -59,7 +66,7 @@ class Viewer(QMainWindow):
             preview_tool = self.addToolBar('Preview')
             preview_tool.addAction(preview_action)
 
-            self.setGeometry(0, 0, 900, 800)  # TODO: Get this from settings
+            self.setGeometry(MAIN_FORM_RECT)
             self.setWindowTitle('Main window')
             self.show()
 
@@ -80,6 +87,7 @@ class Viewer(QMainWindow):
             print(e)
 
     def print_image(self):
+        # TODO Rewrite
         if self.viewer.item(0):
             printer = QtPrintSupport.QPrinter()
             dialog = QtPrintSupport.QPrintDialog(printer, self)

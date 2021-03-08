@@ -7,6 +7,10 @@ MAIN_SECTION = 'SETTINGS'
 config_path = os.path.join('./', CONFIG_FILE_NAME)
 
 
+def unpack_int(s: str):
+    return tuple(map(int, s.split(',')))
+
+
 class Settings:
     def __init__(self):
         try:
@@ -18,6 +22,7 @@ class Settings:
             sys.exit(-1)
 
     def __getattr__(self, name: str):
+        name = name.lower()
         try:
             return object.__getattribute__(self, name)
         except AttributeError:

@@ -1,7 +1,7 @@
 import sys
 from datetime import datetime
 
-from PySide2.QtCore import Signal, Qt, Slot
+from PySide2.QtCore import Signal, Qt, Slot, QRect
 from PySide2.QtGui import QMouseEvent, QPixmap
 from PySide2.QtWidgets import (QListWidget, QListWidgetItem, QGroupBox,
                                QLineEdit, QVBoxLayout, QLabel)
@@ -11,15 +11,22 @@ from pynetdicom import AE, evt
 from pynetdicom.events import Event
 
 from tools import get_pixmap_from, try_port, decode_rus
+from settings import settings, unpack_int
 
-# Spacing between ImageBoxes in ImageList TODO: Get this from settings
-IMAGE_LIST_SPACING = 5
-DICOM_SCP_PORT = 104  # TODO: Get this from settings
+# loading settings:
+# Spacing between ImageBoxes in ImageList
+IMAGE_LIST_SPACING = int(settings.IMAGE_LIST_SPACING)
+# port for listening
+DICOM_SCP_PORT = int(settings.DICOM_SCP_PORT)
+# 400px - target width of image for ImageBox
+VIEW_IMAGE_WIDTH = int(settings.VIEW_IMAGE_WIDTH)
+
+BOX_FONT_SIZE = int(settings.BOX_FONT_SIZE)
+
+IMAGE_CROPPING_RECT = QRect(*unpack_int(settings.IMAGE_CROPPING_RECT))
 
 
 class ImageBox(QGroupBox):
-    # 400px - target width of image for ImageBox TODO: Get this from settings
-    VIEW_IMAGE_WIDTH = 400
 
     def __init__(self, pixmap: QPixmap, image_info: str):
         super().__init__()
@@ -30,15 +37,15 @@ class ImageBox(QGroupBox):
         self.setCheckable(True)
         self.setChecked(True)
         font = self.font()
-        font.setPixelSize(12)
+        font.setPixelSize(BOX_FONT_SIZE)
         self.setFont(font)
 
         self.pixmap = pixmap
 
         self.img = QLabel()
-        ratio = self.VIEW_IMAGE_WIDTH / float(pixmap.width())
+        ratio = VIEW_IMAGE_WIDTH / float(pixmap.width())
         height = int(float(pixmap.height()) * float(ratio))
-        self.img.resize(self.VIEW_IMAGE_WIDTH, height)
+        self.img.resize(VIEW_IMAGE_WIDTH, height)
         self.img.setPixmap(self.pixmap.scaled(self.img.size(),
                                               Qt.KeepAspectRatio,
                                               Qt.SmoothTransformation))
@@ -86,7 +93,7 @@ class DicomImageList(QListWidget):
         self.ae = AE()
         self.ae.add_supported_context('1.2.840.10008.5.1.4.1.1.6.1',
                                       ImplicitVRLittleEndian)
-        if try_port(104):
+        if try_port(DICOM_SCP_PORT):
             self.ae.start_server(('', DICOM_SCP_PORT), block=False,
                                  evt_handlers=self.__handlers)
         else:
@@ -136,7 +143,7 @@ class DicomImageList(QListWidget):
             self.get_dicom_info(ds)
 
         ict = datetime.strptime(ds.InstanceCreationTime, '%H%M%S').time()
-        box = ImageBox(get_pixmap_from(ds).copy(0, 100, 840, 668),
+        box = ImageBox(get_pixmap_from(ds).copy(IMAGE_CROPPING_RECT),
                        '№{} at {}, sensor: {}, {}'
                        .format(ds.InstanceNumber,
                                ict,
