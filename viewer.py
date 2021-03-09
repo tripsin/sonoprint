@@ -1,15 +1,15 @@
 import sys
 
 from PySide2 import QtPrintSupport
-from PySide2.QtCore import QPoint, QRect
-from PySide2.QtGui import QPainter, QIcon
+from PySide2.QtCore import QRect
+from PySide2.QtGui import QIcon
 from PySide2.QtPrintSupport import QPrinter
 from PySide2.QtWidgets import (QMainWindow, QAction, QApplication,
-                               QFileDialog, QStyle, QCommonStyle)
+                               QFileDialog)
 from pydicom import dcmread
 
-from dicomimagelist import DicomImageList
 import report
+from dicomimagelist import DicomImageList
 from settings import settings, unpack_int
 
 # loading settings
@@ -25,46 +25,49 @@ class Viewer(QMainWindow):
 
             self.viewer = DicomImageList()
             self.setCentralWidget(self.viewer)
-            self.setWindowIcon(QIcon('./icons/us.svg'))
-            st = QCommonStyle()
+            self.setWindowIcon(QIcon('./icons/sonoprint.ico'))
 
-            open_action = QAction(st.standardIcon(QStyle.SP_DialogOpenButton),
-                                  'Open DCM', self)
+            open_action = QAction(QIcon('./icons/open.ico'),
+                                  'Open DCM files', self)
             open_action.setShortcut('Ctrl+O')
-            open_action.setStatusTip('Open DCM file')
+            open_action.setStatusTip('Open DCM files')
             # noinspection PyUnresolvedReferences
             open_action.triggered.connect(self.open_dcm_file)
 
-            printer_action = QAction(st.standardIcon(QStyle.SP_FileDialogDetailedView),
-                                     'Print image', self)
+            print_action = QAction(QIcon('./icons/print.ico'),
+                                   'Preview Print', self)
+            print_action.setShortcut('Ctrl+P')
+            print_action.setStatusTip('Preview Print')
             # noinspection PyUnresolvedReferences
-            printer_action.triggered.connect(self.print_image)
+            print_action.triggered.connect(self.preview_print)
 
-            # preview_action = QAction(st.standardIcon(QStyle.SP_FileDialogContentsView),
-            #                          'Preview Print', self)
-            preview_action = QAction(QIcon('./icons/document-print-preview.png'),
-                                     'Preview Print', self)
+            settings_action = QAction(QIcon('./icons/settings.ico'),
+                                      'Settings', self)
+            settings_action.setStatusTip('Settings')
             # noinspection PyUnresolvedReferences
-            preview_action.triggered.connect(self.preview_print)
+            settings_action.triggered.connect(self.show_settings)
+
+            exit_action = QAction(QIcon('./icons/exit.ico'),
+                                  'Exit', self)
+            exit_action.setStatusTip('Exit')
+            # noinspection PyUnresolvedReferences
+            exit_action.triggered.connect(self.close)
 
             self.statusBar()
 
             menu_bar = self.menuBar()
             file_menu = menu_bar.addMenu('&File')
             file_menu.addAction(open_action)
-            print_menu = menu_bar.addMenu('&Print')
-            print_menu.addAction(printer_action)
-            print_menu.setDisabled(True)
-            preview_menu = menu_bar.addMenu('Pre&view')
-            preview_menu.addAction(preview_action)
+            file_menu.addAction(print_action)
+            file_menu.addAction(settings_action)
+            file_menu.addAction(exit_action)
 
-            toolbar = self.addToolBar('Open')
+            toolbar = self.addToolBar('toolbar')
             toolbar.addAction(open_action)
-            print_tool = self.addToolBar('Print')
-            print_tool.addAction(printer_action)
-            print_tool.setDisabled(True)
-            preview_tool = self.addToolBar('Preview')
-            preview_tool.addAction(preview_action)
+            toolbar.addSeparator()
+            toolbar.addAction(print_action)
+            toolbar.addSeparator()
+            toolbar.addAction(settings_action)
 
             self.setGeometry(MAIN_FORM_RECT)
             self.setWindowTitle('Main window')
@@ -84,24 +87,19 @@ class Viewer(QMainWindow):
                 for fn in files:
                     self.viewer.store_signal_handler(dcmread(fn))
         except Exception as e:
-            print(e)
-
-    def print_image(self):
-        # TODO Rewrite
-        if self.viewer.item(0):
-            printer = QtPrintSupport.QPrinter()
-            dialog = QtPrintSupport.QPrintDialog(printer, self)
-            dialog.setWindowTitle('Print image')
-            if dialog.exec_() == dialog.Accepted:
-                self.viewer.itemWidget(self.viewer.item(0)).render(QPainter(printer),
-                                                                   QPoint(0, 0))
+            print(e)  # TODO msg box
 
     def preview_print(self):
-        if self.viewer.item(0):
+        if any(box.isChecked() for box in self.viewer.boxes()):
             dialog = QtPrintSupport.QPrintPreviewDialog()
             dialog.paintRequested.connect(self.handle_paint_request)
             dialog.showMaximized()
+            dialog.setWindowIcon(QIcon('./icons/sonoprint.ico'))
             dialog.exec_()
+
+    def show_settings(self):
+        # TODO
+        pass
 
     def handle_paint_request(self, printer: QPrinter):
         if printer:
