@@ -1,1 +1,0 @@
-pyinstaller --noconsole --onefile --clean viewer.py

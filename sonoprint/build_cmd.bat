@@ -1,0 +1,1 @@
+pyinstaller --noconsole --onefile --clean --noconfirm --icon=..\icons\sonoprint.ico sonoprint.py

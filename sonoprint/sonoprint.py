@@ -12,6 +12,8 @@ import report
 from dicomimagelist import DicomImageList
 from settings import settings, unpack_int
 
+import rc_icons
+
 # loading settings
 MAIN_FORM_RECT = QRect(*unpack_int(settings.MAIN_FORM_RECT))
 # end (loading settings)
@@ -23,31 +25,31 @@ class Viewer(QMainWindow):
         try:
             super().__init__()
 
+            self.setWindowIcon(QIcon(':/icons/sonoprint.ico'))
             self.viewer = DicomImageList()
             self.setCentralWidget(self.viewer)
-            self.setWindowIcon(QIcon('./icons/sonoprint.ico'))
 
-            open_action = QAction(QIcon('./icons/open.ico'),
+            open_action = QAction(QIcon(':/icons/open.ico'),
                                   'Open DCM files', self)
             open_action.setShortcut('Ctrl+O')
             open_action.setStatusTip('Open DCM files')
             # noinspection PyUnresolvedReferences
             open_action.triggered.connect(self.open_dcm_file)
 
-            print_action = QAction(QIcon('./icons/print.ico'),
+            print_action = QAction(QIcon(':/icons/print.ico'),
                                    'Preview Print', self)
             print_action.setShortcut('Ctrl+P')
             print_action.setStatusTip('Preview Print')
             # noinspection PyUnresolvedReferences
             print_action.triggered.connect(self.preview_print)
 
-            settings_action = QAction(QIcon('./icons/settings.ico'),
+            settings_action = QAction(QIcon(':/icons/settings.ico'),
                                       'Settings', self)
             settings_action.setStatusTip('Settings')
             # noinspection PyUnresolvedReferences
             settings_action.triggered.connect(self.show_settings)
 
-            exit_action = QAction(QIcon('./icons/exit.ico'),
+            exit_action = QAction(QIcon(':/icons/exit.ico'),
                                   'Exit', self)
             exit_action.setStatusTip('Exit')
             # noinspection PyUnresolvedReferences
@@ -70,7 +72,7 @@ class Viewer(QMainWindow):
             toolbar.addAction(settings_action)
 
             self.setGeometry(MAIN_FORM_RECT)
-            self.setWindowTitle('Main window')
+            self.setWindowTitle('Sonoprint')
             self.show()
 
         except Exception as e:
@@ -94,7 +96,7 @@ class Viewer(QMainWindow):
             dialog = QtPrintSupport.QPrintPreviewDialog()
             dialog.paintRequested.connect(self.handle_paint_request)
             dialog.showMaximized()
-            dialog.setWindowIcon(QIcon('./icons/sonoprint.ico'))
+            dialog.setWindowIcon(QIcon(':/icons/sonoprint.ico'))
             dialog.exec_()
 
     def show_settings(self):

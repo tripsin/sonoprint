@@ -130,6 +130,6 @@ def decode_rus(s: str, dataset: Dataset) -> str:
 
 
 if __name__ == '__main__':
-    im = _get_pil_image(dcmread('./test_scu/dcm/27.dcm'))
+    im = _get_pil_image(dcmread('../test_scu/dcm/27.dcm'))
     im = _process(im)
     im.save('./27.jpg')
