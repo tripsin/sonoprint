@@ -8,15 +8,16 @@ from PySide2.QtWidgets import (QMainWindow, QAction, QApplication,
                                QFileDialog)
 from pydicom import dcmread
 
+# noinspection PyUnresolvedReferences
+import rc_icons
 import report
 from dicomimagelist import DicomImageList
 from settings import settings, unpack_int
 
-import rc_icons
-
 # loading settings
+from tools import log_to_file
+
 MAIN_FORM_RECT = QRect(*unpack_int(settings.MAIN_FORM_RECT))
-# end (loading settings)
 
 
 class Viewer(QMainWindow):
@@ -76,8 +77,8 @@ class Viewer(QMainWindow):
             self.show()
 
         except Exception as e:
-            print(e)
-            sys.exit()
+            log_to_file(str(e))
+            sys.exit(-1)
 
     def open_dcm_file(self):
         try:
@@ -89,7 +90,8 @@ class Viewer(QMainWindow):
                 for fn in files:
                     self.viewer.store_signal_handler(dcmread(fn))
         except Exception as e:
-            print(e)  # TODO msg box
+            log_to_file('Open_File dialog failed: {}'.format(e))
+            # print(e)  # TODO msg box
 
     def preview_print(self):
         if any(box.isChecked() for box in self.viewer.boxes()):

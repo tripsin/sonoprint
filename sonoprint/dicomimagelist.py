@@ -10,7 +10,7 @@ from pydicom.uid import ImplicitVRLittleEndian
 from pynetdicom import AE, evt
 from pynetdicom.events import Event
 
-from tools import get_pixmap_from, try_port, decode_rus
+from tools import get_pixmap_from, try_port, decode_rus, log_to_file
 from settings import settings, unpack_int
 
 # loading settings:
@@ -97,7 +97,7 @@ class DicomImageList(QListWidget):
             self.ae.start_server(('', DICOM_SCP_PORT), block=False,
                                  evt_handlers=self.__handlers)
         else:
-            sys.exit()
+            sys.exit(-1)
         # --------------------------
 
     def handle_c_store(self, event: Event) -> int:
@@ -111,7 +111,7 @@ class DicomImageList(QListWidget):
             # noinspection PyUnresolvedReferences
             self.store_signal.emit(ds)
         except Exception as e:
-            print('\nERROR: ', e)
+            log_to_file('\n HANDLE_C_STORE ERROR: {}'.format(e))
             return 0xC001
         return 0x0000
 

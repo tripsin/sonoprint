@@ -22,7 +22,7 @@ if __name__ == '__main__':
         sys.exit()
 
     ae = AE()
-    storage_class = ds.file_meta['MediaStorageSOPClassUID'].value
+    storage_class = str(ds.file_meta['MediaStorageSOPClassUID'].value)
     ae.add_requested_context(storage_class)
     # ae.add_requested_context('1.2.840.10008.5.1.4.1.1.6.1')
     # [Ultrasound Image Storage]

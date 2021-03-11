@@ -1,3 +1,4 @@
+import os
 import socket
 
 import numpy
@@ -6,6 +7,8 @@ from PySide2.QtGui import QImage, QPixmap
 from pydicom import Dataset
 from pydicom import dcmread
 from pydicom.charset import python_encoding
+
+from datetime import datetime
 
 
 def _get_lut_value(data, window, level):
@@ -57,7 +60,9 @@ def _get_pil_image(dataset: Dataset) -> Image:
     else:
         ew = dataset['WindowWidth']
         ec = dataset['WindowCenter']
+        # noinspection PyUnresolvedReferences
         ww = int(ew.value[0] if ew.VM > 1 else ew.value)
+        # noinspection PyUnresolvedReferences
         wc = int(ec.value[0] if ec.VM > 1 else ec.value)
         image = _get_lut_value(dataset.pixel_array, ww, wc)
         # Convert mode to L since LUT has only 256 values:
@@ -110,8 +115,8 @@ def try_port(port: int) -> bool:
         sock.bind(("0.0.0.0", port))
         result = True
     except Exception as e:
-        print('Port {} is busy.'.format(port))
-        print(e)
+        log_to_file('Port {} is busy.'.format(port))
+        log_to_file(e)
     finally:
         sock.close()
     return result
@@ -127,6 +132,12 @@ def decode_rus(s: str, dataset: Dataset) -> str:
     if left == right:
         result = left
     return result
+
+
+def log_to_file(message: str):
+    log_path = './errors.log'
+    with open(log_path, "a" if os.path.isfile(log_path) else "w") as log_file:
+        log_file.write('{}: {}\n'.format(datetime.now(), message))
 
 
 if __name__ == '__main__':

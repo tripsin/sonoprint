@@ -1,6 +1,7 @@
 import os
 import sys
 from configparser import ConfigParser, Error
+from tools import log_to_file
 
 CONFIG_FILE_NAME = 'settings.ini'
 MAIN_SECTION = 'SETTINGS'
@@ -18,7 +19,7 @@ class Settings:
             self.config.read(config_path)
             self.option_names = self.config.options(MAIN_SECTION)
         except Error as e:
-            print('SETTINGS ERROR:', e.message)
+            log_to_file('SETTINGS ERROR: {}'.format(e.message))
             sys.exit(-1)
 
     def __getattr__(self, name: str):
@@ -31,8 +32,12 @@ class Settings:
         if name in self.option_names:
             return self.config.get(MAIN_SECTION, name)
         else:
-            print('SETTINGS ERROR: No option {} in {}'.format(name, config_path))
+            log_to_file('SETTINGS ERROR: No option {} in {}'.format(name, config_path))
             sys.exit(-1)
 
+
+if not os.path.isfile(config_path):
+    log_to_file('SETTINGS ERROR: {} not found'.format(CONFIG_FILE_NAME))
+    sys.exit(-1)
 
 settings = Settings()
