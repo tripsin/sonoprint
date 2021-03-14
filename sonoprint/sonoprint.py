@@ -30,6 +30,13 @@ class Viewer(QMainWindow):
             self.viewer = DicomImageList()
             self.setCentralWidget(self.viewer)
 
+            new_action = QAction(QIcon(':/icons/new.ico'),
+                                  'New study', self)
+            new_action.setShortcut('Ctrl+N')
+            new_action.setStatusTip('New study')
+            # noinspection PyUnresolvedReferences
+            new_action.triggered.connect(self.new_study)
+
             open_action = QAction(QIcon(':/icons/open.ico'),
                                   'Open DCM files', self)
             open_action.setShortcut('Ctrl+O')
@@ -60,12 +67,15 @@ class Viewer(QMainWindow):
 
             menu_bar = self.menuBar()
             file_menu = menu_bar.addMenu('&File')
+            file_menu.addAction(new_action)
             file_menu.addAction(open_action)
             file_menu.addAction(print_action)
             file_menu.addAction(settings_action)
             file_menu.addAction(exit_action)
 
             toolbar = self.addToolBar('toolbar')
+            toolbar.addAction(new_action)
+            toolbar.addSeparator()
             toolbar.addAction(open_action)
             toolbar.addSeparator()
             toolbar.addAction(print_action)
@@ -79,6 +89,9 @@ class Viewer(QMainWindow):
         except Exception as e:
             log_to_file(str(e))
             sys.exit(-1)
+
+    def new_study(self):
+        self.viewer.clear()
 
     def open_dcm_file(self):
         try:

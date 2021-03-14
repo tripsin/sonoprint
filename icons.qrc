@@ -1,6 +1,7 @@
 <RCC>
 <qresource>
     <file>icons/sonoprint.ico</file>
+    <file>icons/new.ico</file>
     <file>icons/open.ico</file>
     <file>icons/print.ico</file>
     <file>icons/settings.ico</file>
