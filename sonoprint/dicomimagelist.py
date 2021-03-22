@@ -1,4 +1,5 @@
 import sys
+from codecs import decode
 from datetime import datetime
 
 from PySide2.QtCore import Signal, Qt, Slot, QRect
@@ -89,12 +90,15 @@ class DicomImageList(QListWidget):
         # --------------------------
         # noinspection PyUnresolvedReferences
         self.store_signal.connect(self.store_signal_handler)
-        self.__handlers = [(evt.EVT_C_STORE, self.handle_c_store)]
+        self.__handlers = [(evt.EVT_C_STORE, self.handle_c_store),
+                           (evt.EVT_C_ECHO, self.handle_c_echo)]
         self.ae = AE()
         self.ae.add_supported_context('1.2.840.10008.5.1.4.1.1.6.1',
                                       ImplicitVRLittleEndian)
+        self.ae.add_supported_context('1.2.840.10008.1.1',
+                                      ImplicitVRLittleEndian)
         if try_port(DICOM_SCP_PORT):
-            self.ae.start_server(('', DICOM_SCP_PORT), block=False,
+            self.ae.start_server(('', DICOM_SCP_PORT), block=False, ae_title=b'SONOPRINT',
                                  evt_handlers=self.__handlers)
         else:
             sys.exit(-1)
@@ -105,6 +109,12 @@ class DicomImageList(QListWidget):
         Handle EVT_C_STORE events.
         https://ru.wikipedia.org/wiki/DICOM
         """
+        print('{}: {} from {} on {} (port {})'.
+              format(event.timestamp,
+                     event.event.description,
+                     decode(event.assoc.requestor.ae_title, 'UTF-8').strip(),
+                     event.assoc.requestor.address,
+                     event.assoc.requestor.port))
         try:
             ds = event.dataset
             ds.file_meta = event.file_meta
@@ -113,6 +123,15 @@ class DicomImageList(QListWidget):
         except Exception as e:
             log_to_file('\n HANDLE_C_STORE ERROR: {}'.format(e))
             return 0xC001
+        return 0x0000
+
+    def handle_c_echo(self, event: Event) -> int:
+        print('{}: {} from {} on {} (port {})'.
+              format(event.timestamp,
+                     event.event.description,
+                     decode(event.assoc.requestor.ae_title, 'UTF-8').strip(),
+                     event.assoc.requestor.address,
+                     event.assoc.requestor.port))
         return 0x0000
 
     def get_dicom_info(self, ds: Dataset):

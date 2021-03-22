@@ -9,7 +9,7 @@ DCM_DIR = './dcm/'
 if __name__ == '__main__':
 
     print('#######################')
-    print('#     test_scu.py     #')
+    print('#    test_store.py    #')
     print('#######################')
 
     try:
