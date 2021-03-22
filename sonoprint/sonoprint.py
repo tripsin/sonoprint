@@ -1,3 +1,4 @@
+import subprocess
 import sys
 
 from PySide2 import QtPrintSupport
@@ -12,9 +13,7 @@ from pydicom import dcmread
 import rc_icons
 import report
 from dicomimagelist import DicomImageList
-from settings import settings, unpack_int
-
-# loading settings
+from settings import settings, unpack_int, config_path
 from tools import log_to_file
 
 MAIN_FORM_RECT = QRect(*unpack_int(settings.MAIN_FORM_RECT))
@@ -29,6 +28,13 @@ class Viewer(QMainWindow):
             self.setWindowIcon(QIcon(':/icons/sonoprint.ico'))
             self.viewer = DicomImageList()
             self.setCentralWidget(self.viewer)
+
+            new_action = QAction(QIcon(':/icons/new.ico'),
+                                 'New study', self)
+            new_action.setShortcut('Ctrl+N')
+            new_action.setStatusTip('New study')
+            # noinspection PyUnresolvedReferences
+            new_action.triggered.connect(self.new_study)
 
             open_action = QAction(QIcon(':/icons/open.ico'),
                                   'Open DCM files', self)
@@ -60,12 +66,15 @@ class Viewer(QMainWindow):
 
             menu_bar = self.menuBar()
             file_menu = menu_bar.addMenu('&File')
+            file_menu.addAction(new_action)
             file_menu.addAction(open_action)
             file_menu.addAction(print_action)
             file_menu.addAction(settings_action)
             file_menu.addAction(exit_action)
 
             toolbar = self.addToolBar('toolbar')
+            toolbar.addAction(new_action)
+            toolbar.addSeparator()
             toolbar.addAction(open_action)
             toolbar.addSeparator()
             toolbar.addAction(print_action)
@@ -79,6 +88,9 @@ class Viewer(QMainWindow):
         except Exception as e:
             log_to_file(str(e))
             sys.exit(-1)
+
+    def new_study(self):
+        self.viewer.clear()
 
     def open_dcm_file(self):
         try:
@@ -101,9 +113,9 @@ class Viewer(QMainWindow):
             dialog.setWindowIcon(QIcon(':/icons/sonoprint.ico'))
             dialog.exec_()
 
-    def show_settings(self):
-        # TODO
-        pass
+    @staticmethod
+    def show_settings():
+        subprocess.run(['notepad', config_path])
 
     def handle_paint_request(self, printer: QPrinter):
         if printer:
