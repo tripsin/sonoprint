@@ -1,11 +1,11 @@
 import subprocess
 import sys
 
-from PySide2 import QtPrintSupport
-from PySide2.QtCore import QRect
-from PySide2.QtGui import QIcon
-from PySide2.QtPrintSupport import QPrinter
-from PySide2.QtWidgets import (QMainWindow, QAction, QApplication,
+from PySide6 import QtPrintSupport
+from PySide6.QtCore import QRect
+from PySide6.QtGui import QIcon, QAction
+from PySide6.QtPrintSupport import QPrinter
+from PySide6.QtWidgets import (QMainWindow, QApplication,
                                QFileDialog)
 from pydicom import dcmread
 
@@ -125,4 +125,4 @@ class Viewer(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Viewer()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

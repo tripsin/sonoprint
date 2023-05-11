@@ -1,6 +1,6 @@
-from PySide2.QtCore import QPoint, Qt, QRect, QSize
-from PySide2.QtGui import QPainter, QFont
-from PySide2.QtPrintSupport import QPrinter
+from PySide6.QtCore import QPoint, Qt, QRect, QSize
+from PySide6.QtGui import QPainter, QFont
+from PySide6.QtPrintSupport import QPrinter
 
 from dicomimagelist import DicomImageList, ImageBox
 from settings import settings

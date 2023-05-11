@@ -3,7 +3,7 @@ import socket
 
 import numpy
 from PIL import Image
-from PySide2.QtGui import QImage, QPixmap
+from PySide6.QtGui import QImage, QPixmap
 from pydicom import Dataset
 from pydicom import dcmread
 from pydicom.charset import python_encoding

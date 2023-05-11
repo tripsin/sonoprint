@@ -2,10 +2,10 @@ import sys
 from codecs import decode
 from datetime import datetime
 
-from PySide2.QtCore import Signal, Qt, Slot, QRect
-from PySide2.QtGui import QMouseEvent, QPixmap
-from PySide2.QtWidgets import (QListWidget, QListWidgetItem, QGroupBox,
-                               QLineEdit, QVBoxLayout, QLabel)
+from PySide6.QtCore import Signal, Qt, Slot, QRect
+from PySide6.QtGui import QMouseEvent, QPixmap
+from PySide6.QtWidgets import (QListWidget, QListWidgetItem, QGroupBox,
+                               QLineEdit, QVBoxLayout, QHBoxLayout, QPushButton, QLabel)
 from pydicom import Dataset
 from pydicom.uid import ImplicitVRLittleEndian
 from pynetdicom import AE, evt
@@ -13,6 +13,7 @@ from pynetdicom.events import Event
 
 from tools import get_pixmap_from, try_port, decode_rus, log_to_file
 from settings import settings, unpack_int
+from optionsform import OptionsForm
 
 # loading settings:
 # Spacing between ImageBoxes in ImageList
@@ -53,22 +54,38 @@ class ImageBox(QGroupBox):
 
         self.comment = QLineEdit(self)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.addWidget(self.img)
-        self.layout.addWidget(self.comment)
-        self.setLayout(self.layout)
+        self.options_button = QPushButton('...', self)
+        self.options_button.setFont(font)
+        self.options_button.setFlat(True)
+        self.options_button.setFixedWidth(20)
+
+        self.h_layout = QHBoxLayout()
+        self.h_layout.addWidget(self.comment)
+        self.h_layout.addWidget(self.options_button)
+
+        self.vertical_layout = QVBoxLayout(self)
+        self.vertical_layout.addWidget(self.img)
+        self.vertical_layout.addLayout(self.h_layout)
+        self.setLayout(self.vertical_layout)
 
         self.setFixedWidth(self.contentsMargins().left() +
                            self.contentsMargins().right() +
                            self.img.width() +
-                           (self.layout.spacing() * 2))
+                           (self.vertical_layout.spacing() * 2))
         self.setFixedHeight(self.contentsMargins().top() +
                             self.contentsMargins().bottom() +
                             self.img.height() + self.comment.height() +
-                            (self.layout.spacing() * 3))
+                            (self.vertical_layout.spacing() * 3))
+
+        self.options_button.clicked.connect(self.on_options_button_clicked)
+        self.options = OptionsForm(self.pixmap)
+        self.options.setModal(True)
 
     def change(self):
         self.setChecked(not self.isChecked())
+
+    def on_options_button_clicked(self):
+        self.options.show()
 
 
 class DicomImageList(QListWidget):
