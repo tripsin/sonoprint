@@ -2,7 +2,7 @@ import os
 import socket
 
 import numpy
-from PIL import Image
+from PIL import Image, ImageQt, ImageEnhance
 from PySide6.QtGui import QImage, QPixmap
 from pydicom import Dataset
 from pydicom import dcmread
@@ -96,16 +96,20 @@ def _process(image: Image) -> Image:
 def get_pixmap_from(dataset: Dataset) -> QPixmap:
     """ Return QT5 QPixmap from DICOM dataset"""
     image = _get_pil_image(dataset)
-    image = _process(image)
-
-    # im = im.convert('RGBA')
-    # data = im.tobytes("raw","RGBA")
-    # imqt = QImage(data, im.size[0], im.size[1], QImage.Format_RGBA8888)
-
+    #image = _process(image)
     data = image.tobytes("raw", "RGB")
     qim = QImage(data, image.size[0], image.size[1], QImage.Format_RGB888)
     return QPixmap(qim)
 
+
+def tune(pil_img: ImageQt, brightness, contrast, sharpness) -> QPixmap:
+    sh = float(sharpness) / 100
+    br = float(brightness) / 100
+    co = float(contrast) / 100
+    tmp_img = ImageEnhance.Sharpness(pil_img).enhance(sh)
+    tmp_img = ImageEnhance.Brightness(tmp_img).enhance(br)
+    tmp_img = ImageEnhance.Contrast(tmp_img).enhance(co)
+    return ImageQt.toqpixmap(tmp_img)
 
 def try_port(port: int) -> bool:
     """ Return True if *port* free """
