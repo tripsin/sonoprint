@@ -35,6 +35,11 @@ class Settings:
             log_to_file('SETTINGS ERROR: No option {} in {}'.format(name, config_path))
             sys.exit(-1)
 
+    def save(self, option: str, value: str):
+        self.config.set('SETTINGS', option, value)
+        with open(config_path, "w") as config_file:
+            self.config.write(config_file)
+
 
 if not os.path.isfile(config_path):
     log_to_file('SETTINGS ERROR: {} not found'.format(CONFIG_FILE_NAME))
