@@ -11,7 +11,7 @@ from pydicom.uid import ImplicitVRLittleEndian
 from pynetdicom import AE, evt
 from pynetdicom.events import Event
 
-from tools import get_pixmap_from, try_port, decode_rus, log_to_file
+from tools import get_pixmap_from, try_port, decode_rus, log_to_file, tune_qpixmap
 from settings import settings, unpack_int
 from optionsform import OptionsForm
 
@@ -43,14 +43,17 @@ class ImageBox(QGroupBox):
         self.setFont(font)
 
         self.pixmap = pixmap
+        self.options = OptionsForm(self.pixmap)
 
         self.img = QLabel()
         ratio = VIEW_IMAGE_WIDTH / float(pixmap.width())
         height = int(float(pixmap.height()) * float(ratio))
         self.img.resize(VIEW_IMAGE_WIDTH, height)
-        self.img.setPixmap(self.pixmap.scaled(self.img.size(),
+        self.scaled_pixmap = self.pixmap.scaled(self.img.size(),
                                               Qt.KeepAspectRatio,
-                                              Qt.SmoothTransformation))
+                                              Qt.SmoothTransformation)
+        self.img.setPixmap(tune_qpixmap(self.scaled_pixmap, self.options.brightness(),
+                                        self.options.contrast(), self.options.sharpness()))
 
         self.comment = QLineEdit(self)
 
@@ -78,14 +81,16 @@ class ImageBox(QGroupBox):
                             (self.vertical_layout.spacing() * 3))
 
         self.options_button.clicked.connect(self.on_options_button_clicked)
-        self.options = OptionsForm(self.pixmap)
-        self.options.setModal(True)
 
     def change(self):
         self.setChecked(not self.isChecked())
 
     def on_options_button_clicked(self):
-        self.options.show()
+        if self.options.exec():
+            self.img.setPixmap(tune_qpixmap(self.scaled_pixmap,
+                                            self.options.brightness(),
+                                            self.options.contrast(),
+                                            self.options.sharpness()))
 
 
 class DicomImageList(QListWidget):

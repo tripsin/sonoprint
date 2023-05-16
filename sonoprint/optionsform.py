@@ -1,24 +1,27 @@
-from PySide6.QtCore import Qt, QRect
-from PySide6.QtWidgets import (QVBoxLayout, QLabel, QSlider, QDialog)
-from PySide6.QtGui import QPixmap
-from PIL import ImageEnhance, ImageQt
-from settings import settings, unpack_int
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QSlider, QDialog, QPushButton)
+from PySide6.QtGui import QPixmap, QIcon
+from PIL import ImageQt
+from settings import settings
+from tools import tune
 
 # loading settings:
-# Spacing between ImageBoxes in ImageList
-IMAGE_LIST_SPACING = int(settings.IMAGE_LIST_SPACING)
 
-# 400px - target width of image for ImageBox
 VIEW_IMAGE_WIDTH = int(settings.VIEW_IMAGE_WIDTH)
-
-BOX_FONT_SIZE = int(settings.BOX_FONT_SIZE)
-
-IMAGE_CROPPING_RECT = QRect(*unpack_int(settings.IMAGE_CROPPING_RECT))
+DEFAULT_IMAGE_BRIGHTNESS = int(settings.DEFAULT_IMAGE_BRIGHTNESS)
+DEFAULT_IMAGE_CONTRAST = int(settings.DEFAULT_IMAGE_CONTRAST)
+DEFAULT_IMAGE_SHARPNESS = int(settings.DEFAULT_IMAGE_SHARPNESS)
+SAVED_IMAGE_BRIGHTNESS = int(settings.SAVED_IMAGE_BRIGHTNESS)
+SAVED_IMAGE_CONTRAST = int(settings.SAVED_IMAGE_CONTRAST)
+SAVED_IMAGE_SHARPNESS = int(settings.SAVED_IMAGE_SHARPNESS)
 
 
 class OptionsForm(QDialog):
     def __init__(self, pixmap: QPixmap):
         super().__init__()
+
+        self.setWindowTitle('Sonoprint - Setting image characteristics')
+        self.setWindowIcon(QIcon(':/icons/sonoprint.ico'))
 
         ratio = VIEW_IMAGE_WIDTH / float(pixmap.width())
         height = int(float(pixmap.height()) * float(ratio))
@@ -27,59 +30,112 @@ class OptionsForm(QDialog):
         self.img.resize(VIEW_IMAGE_WIDTH, height)
 
         self.pixmap = pixmap.scaled(self.img.size(),
-                                              Qt.KeepAspectRatio,
-                                              Qt.SmoothTransformation)
+                                    Qt.KeepAspectRatio,
+                                    Qt.SmoothTransformation)
         self.tmp_pil_img = ImageQt.fromqpixmap(self.pixmap)
 
-        #self.img.setPixmap(self.pixmap)
-        #self.img.setPixmap(self.pixmap.scaled(self.img.size(),
-        #                                      Qt.KeepAspectRatio,
-        #                                      Qt.SmoothTransformation))
-
+        self.lblBrightness = QLabel()
+        self.lblBrightness.setText('Brightness')
+        self.lblBrightness.setFixedWidth(60)
         self.sldBrightness = QSlider()
         self.sldBrightness.setMaximum(500)
-        self.sldBrightness.setValue(100)
+        self.sldBrightness.setValue(SAVED_IMAGE_BRIGHTNESS)
         self.sldBrightness.setOrientation(Qt.Horizontal)
         self.sldBrightness.setTickPosition(QSlider.TicksBothSides)
+        self.lytBrightness = QHBoxLayout()
+        self.lytBrightness.addWidget(self.lblBrightness)
+        self.lytBrightness.addWidget(self.sldBrightness)
 
+        self.lblContrast = QLabel()
+        self.lblContrast.setText('Contrast')
+        self.lblContrast.setFixedWidth(60)
         self.sldContrast = QSlider()
         self.sldContrast.setMaximum(500)
-        self.sldContrast.setValue(100)
+        self.sldContrast.setValue(SAVED_IMAGE_CONTRAST)
         self.sldContrast.setOrientation(Qt.Horizontal)
         self.sldContrast.setTickPosition(QSlider.TicksBothSides)
+        self.lytContrast = QHBoxLayout()
+        self.lytContrast.addWidget(self.lblContrast)
+        self.lytContrast.addWidget(self.sldContrast)
 
+        self.lblSharpness = QLabel()
+        self.lblSharpness.setText('Sharpness')
+        self.lblSharpness.setFixedWidth(60)
         self.sldSharpness = QSlider()
         self.sldSharpness.setMaximum(400)
         self.sldSharpness.setMinimum(-100)
-        self.sldSharpness.setValue(100)
+        self.sldSharpness.setValue(SAVED_IMAGE_SHARPNESS)
         self.sldSharpness.setOrientation(Qt.Horizontal)
         self.sldSharpness.setTickPosition(QSlider.TicksBothSides)
+        self.lytSharpness = QHBoxLayout()
+        self.lytSharpness.addWidget(self.lblSharpness)
+        self.lytSharpness.addWidget(self.sldSharpness)
+
+        self.btnReset = QPushButton('Reset')
+        self.btnLoad = QPushButton('Load')
+        self.btnSave = QPushButton('Save')
+        self.btnApply = QPushButton('Apply')
+        self.btnCancel = QPushButton('Cancel')
+        self.lytButtons = QHBoxLayout()
+        self.lytButtons.addWidget(self.btnReset)
+        self.lytButtons.addWidget(self.btnLoad)
+        self.lytButtons.addWidget(self.btnSave)
+        self.lytButtons.addWidget(self.btnApply)
+        self.lytButtons.addWidget(self.btnCancel)
 
         self.vertical_layout = QVBoxLayout(self)
         self.vertical_layout.addWidget(self.img)
-        self.vertical_layout.addWidget(self.sldBrightness)
-        self.vertical_layout.addWidget(self.sldContrast)
-        self.vertical_layout.addWidget(self.sldSharpness)
+        self.vertical_layout.addLayout(self.lytBrightness)
+        self.vertical_layout.addLayout(self.lytContrast)
+        self.vertical_layout.addLayout(self.lytSharpness)
+        self.vertical_layout.addLayout(self.lytButtons)
         self.setLayout(self.vertical_layout)
 
-        self.sldBrightness.valueChanged.connect(self.doo)
-        self.sldContrast.valueChanged.connect(self.doo)
-        self.sldSharpness.valueChanged.connect(self.doo)
+        self.sldBrightness.valueChanged.connect(self.calibrate_image)
+        self.sldContrast.valueChanged.connect(self.calibrate_image)
+        self.sldSharpness.valueChanged.connect(self.calibrate_image)
+        self.btnReset.clicked.connect(self.reset_sliders)
+        self.btnLoad.clicked.connect(self.load)
+        self.btnApply.clicked.connect(self.apply)
+        self.btnSave.clicked.connect(self.save)
+        self.btnCancel.clicked.connect(self.cancel)
 
-        self.doo()
+        self.btnApply.setDefault(True)
 
-    def doo(self):
-        sh = float(self.sldSharpness.value()) / 100
-        br = float(self.sldBrightness.value()) / 100
-        co = float(self.sldContrast.value()) / 100
+        self.calibrate_image()
 
-        #tmp_img = ImageQt.ImageQt(self.img.pixmap().toImage())
-        #tmp_img = self.tmp_pil_img
+    def calibrate_image(self):
+        pixmap = tune(self.tmp_pil_img, self.sldBrightness.value(),
+                      self.sldContrast.value(), self.sldSharpness.value())
+        self.img.setPixmap(pixmap)
 
-        tmp_img = ImageEnhance.Sharpness(self.tmp_pil_img).enhance(sh)
+    def reset_sliders(self):
+        self.sldSharpness.setValue(DEFAULT_IMAGE_SHARPNESS)
+        self.sldBrightness.setValue(DEFAULT_IMAGE_BRIGHTNESS)
+        self.sldContrast.setValue(DEFAULT_IMAGE_CONTRAST)
 
-        tmp_img = ImageEnhance.Brightness(tmp_img).enhance(br)
+    def save(self):
+        settings.save('SAVED_IMAGE_BRIGHTNESS', str(self.sldBrightness.value()))
+        settings.save('SAVED_IMAGE_CONTRAST', str(self.sldContrast.value()))
+        settings.save('SAVED_IMAGE_SHARPNESS', str(self.sldSharpness.value()))
+        self.done(1)
 
-        tmp_img = ImageEnhance.Contrast(tmp_img).enhance(co)
+    def apply(self):
+        self.done(1)
 
-        self.img.setPixmap(ImageQt.toqpixmap(tmp_img))
+    def cancel(self):
+        self.close()
+
+    def load(self):
+        self.sldBrightness.setValue(SAVED_IMAGE_BRIGHTNESS)
+        self.sldContrast.setValue(SAVED_IMAGE_CONTRAST)
+        self.sldSharpness.setValue(SAVED_IMAGE_SHARPNESS)
+
+    def brightness(self) -> int:
+        return self.sldBrightness.value()
+
+    def contrast(self) -> int:
+        return self.sldContrast.value()
+
+    def sharpness(self) -> int:
+        return self.sldSharpness.value()
