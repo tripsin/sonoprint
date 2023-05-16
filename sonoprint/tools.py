@@ -73,30 +73,10 @@ def _get_pil_image(dataset: Dataset) -> Image:
     return image
 
 
-def _process(image: Image) -> Image:
-    """
-    Crop and calibrate image
-    :type image: PIL.Image
-    """
-
-    # crop_rect = (0, 95, 800, 760)  # TODO Get this from settings
-    # image = image.crop(crop_rect)  # left, top, right, bottom
-
-    # image.thumbnail(image_size, Image.LANCZOS) - damage image!
-    '''
-    # code for image resizing. not needed
-    basewidth = width
-    wpercent = (basewidth / float(image.size[0]))
-    hsize = int((float(image.size[1]) * float(wpercent)))
-    image = image.resize((basewidth, hsize), Image.LANCZOS)
-    '''
-    return image
-
-
 def get_pixmap_from(dataset: Dataset) -> QPixmap:
     """ Return QT5 QPixmap from DICOM dataset"""
     image = _get_pil_image(dataset)
-    #image = _process(image)
+    # image = _process(image)
     data = image.tobytes("raw", "RGB")
     qim = QImage(data, image.size[0], image.size[1], QImage.Format_RGB888)
     return QPixmap(qim)
@@ -110,6 +90,11 @@ def tune(pil_img: ImageQt, brightness, contrast, sharpness) -> QPixmap:
     tmp_img = ImageEnhance.Brightness(tmp_img).enhance(br)
     tmp_img = ImageEnhance.Contrast(tmp_img).enhance(co)
     return ImageQt.toqpixmap(tmp_img)
+
+
+def tune_qpixmap(pixmap: QPixmap, brightness, contrast, sharpness) -> QPixmap:
+    return tune(ImageQt.fromqpixmap(pixmap), brightness, contrast, sharpness)
+
 
 def try_port(port: int) -> bool:
     """ Return True if *port* free """
@@ -129,7 +114,7 @@ def try_port(port: int) -> bool:
 def decode_rus(s: str, dataset: Dataset) -> str:
     # исправляем кодировку на русскую
     result = bytes(s, python_encoding[str(dataset.SpecificCharacterSet)]) \
-        .decode(python_encoding['ISO_IR 144'])  # fro Russian
+        .decode(python_encoding['ISO_IR 144'])  # for Russian
     # если строка повторяется, то берем половину
     left = result[:len(result) // 2]
     right = result[len(result) // 2:len(result)]
@@ -146,5 +131,4 @@ def log_to_file(message: str):
 
 if __name__ == '__main__':
     im = _get_pil_image(dcmread('../test_scu/dcm/27.dcm'))
-    im = _process(im)
     im.save('./27.jpg')
