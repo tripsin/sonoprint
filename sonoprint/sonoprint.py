@@ -2,7 +2,7 @@ import subprocess
 import sys
 
 from PySide6 import QtPrintSupport
-from PySide6.QtCore import QRect
+from PySide6.QtCore import QRect, Signal
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtPrintSupport import QPrinter
 from PySide6.QtWidgets import (QMainWindow, QApplication,
@@ -122,7 +122,13 @@ class Viewer(QMainWindow):
             report.make(printer, self.viewer)
 
 
+class Sonoprint(QApplication):
+    # global signals
+    settings_changed = Signal()
+
+
+
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = Sonoprint(sys.argv)
     ex = Viewer()
     sys.exit(app.exec())

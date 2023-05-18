@@ -5,7 +5,7 @@ from datetime import datetime
 from PySide6.QtCore import Signal, Qt, Slot, QRect
 from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtWidgets import (QListWidget, QListWidgetItem, QGroupBox,
-                               QLineEdit, QVBoxLayout, QHBoxLayout, QPushButton, QLabel)
+                               QLineEdit, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QApplication)
 from pydicom import Dataset
 from pydicom.uid import ImplicitVRLittleEndian
 from pynetdicom import AE, evt
@@ -52,8 +52,7 @@ class ImageBox(QGroupBox):
         self.scaled_pixmap = self.pixmap.scaled(self.img.size(),
                                               Qt.KeepAspectRatio,
                                               Qt.SmoothTransformation)
-        self.img.setPixmap(tune_qpixmap(self.scaled_pixmap, self.options.brightness(),
-                                        self.options.contrast(), self.options.sharpness()))
+        self.draw()
 
         self.comment = QLineEdit(self)
 
@@ -81,16 +80,24 @@ class ImageBox(QGroupBox):
                             (self.vertical_layout.spacing() * 3))
 
         self.options_button.clicked.connect(self.on_options_button_clicked)
+        self.options.redraw.connect(self.redraw_handler)
 
     def change(self):
         self.setChecked(not self.isChecked())
 
+    def draw(self):
+        self.img.setPixmap(tune_qpixmap(self.scaled_pixmap,
+                                        self.options.brightness(),
+                                        self.options.contrast(),
+                                        self.options.sharpness()))
+
     def on_options_button_clicked(self):
         if self.options.exec():
-            self.img.setPixmap(tune_qpixmap(self.scaled_pixmap,
-                                            self.options.brightness(),
-                                            self.options.contrast(),
-                                            self.options.sharpness()))
+            self.draw()
+
+    @Slot()
+    def redraw_handler(self):
+        self.draw()
 
 
 class DicomImageList(QListWidget):

@@ -1,5 +1,5 @@
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QSlider, QDialog, QPushButton)
+from PySide6.QtCore import Qt, Slot, Signal
+from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QSlider, QDialog, QPushButton, QApplication)
 from PySide6.QtGui import QPixmap, QIcon
 from PIL import ImageQt
 from settings import settings
@@ -11,14 +11,18 @@ VIEW_IMAGE_WIDTH = int(settings.VIEW_IMAGE_WIDTH)
 DEFAULT_IMAGE_BRIGHTNESS = int(settings.DEFAULT_IMAGE_BRIGHTNESS)
 DEFAULT_IMAGE_CONTRAST = int(settings.DEFAULT_IMAGE_CONTRAST)
 DEFAULT_IMAGE_SHARPNESS = int(settings.DEFAULT_IMAGE_SHARPNESS)
-SAVED_IMAGE_BRIGHTNESS = int(settings.SAVED_IMAGE_BRIGHTNESS)
-SAVED_IMAGE_CONTRAST = int(settings.SAVED_IMAGE_CONTRAST)
-SAVED_IMAGE_SHARPNESS = int(settings.SAVED_IMAGE_SHARPNESS)
 
 
 class OptionsForm(QDialog):
+
+    redraw = Signal()
+
     def __init__(self, pixmap: QPixmap):
         super().__init__()
+
+        self.saved_image_brightness = int(settings.SAVED_IMAGE_BRIGHTNESS)
+        self.saved_image_contrast = int(settings.SAVED_IMAGE_CONTRAST)
+        self.saved_image_sharpness = int(settings.SAVED_IMAGE_SHARPNESS)
 
         self.setWindowTitle('Sonoprint - Setting image characteristics')
         self.setWindowIcon(QIcon(':/icons/sonoprint.ico'))
@@ -39,7 +43,7 @@ class OptionsForm(QDialog):
         self.lblBrightness.setFixedWidth(60)
         self.sldBrightness = QSlider()
         self.sldBrightness.setMaximum(500)
-        self.sldBrightness.setValue(SAVED_IMAGE_BRIGHTNESS)
+        self.sldBrightness.setValue(self.saved_image_brightness)
         self.sldBrightness.setOrientation(Qt.Horizontal)
         self.sldBrightness.setTickPosition(QSlider.TicksBothSides)
         self.lytBrightness = QHBoxLayout()
@@ -51,7 +55,7 @@ class OptionsForm(QDialog):
         self.lblContrast.setFixedWidth(60)
         self.sldContrast = QSlider()
         self.sldContrast.setMaximum(500)
-        self.sldContrast.setValue(SAVED_IMAGE_CONTRAST)
+        self.sldContrast.setValue(self.saved_image_contrast)
         self.sldContrast.setOrientation(Qt.Horizontal)
         self.sldContrast.setTickPosition(QSlider.TicksBothSides)
         self.lytContrast = QHBoxLayout()
@@ -64,7 +68,7 @@ class OptionsForm(QDialog):
         self.sldSharpness = QSlider()
         self.sldSharpness.setMaximum(400)
         self.sldSharpness.setMinimum(-100)
-        self.sldSharpness.setValue(SAVED_IMAGE_SHARPNESS)
+        self.sldSharpness.setValue(self.saved_image_sharpness)
         self.sldSharpness.setOrientation(Qt.Horizontal)
         self.sldSharpness.setTickPosition(QSlider.TicksBothSides)
         self.lytSharpness = QHBoxLayout()
@@ -100,6 +104,8 @@ class OptionsForm(QDialog):
         self.btnSave.clicked.connect(self.save)
         self.btnCancel.clicked.connect(self.cancel)
 
+        QApplication.instance().settings_changed.connect(self.settings_changed_handler)
+
         self.btnApply.setDefault(True)
 
         self.calibrate_image()
@@ -118,6 +124,7 @@ class OptionsForm(QDialog):
         settings.save('SAVED_IMAGE_BRIGHTNESS', str(self.sldBrightness.value()))
         settings.save('SAVED_IMAGE_CONTRAST', str(self.sldContrast.value()))
         settings.save('SAVED_IMAGE_SHARPNESS', str(self.sldSharpness.value()))
+        QApplication.instance().settings_changed.emit()
         self.done(1)
 
     def apply(self):
@@ -127,9 +134,9 @@ class OptionsForm(QDialog):
         self.close()
 
     def load(self):
-        self.sldBrightness.setValue(SAVED_IMAGE_BRIGHTNESS)
-        self.sldContrast.setValue(SAVED_IMAGE_CONTRAST)
-        self.sldSharpness.setValue(SAVED_IMAGE_SHARPNESS)
+        self.sldBrightness.setValue(self.saved_image_brightness)
+        self.sldContrast.setValue(self.saved_image_contrast)
+        self.sldSharpness.setValue(self.saved_image_sharpness)
 
     def brightness(self) -> int:
         return self.sldBrightness.value()
@@ -139,3 +146,13 @@ class OptionsForm(QDialog):
 
     def sharpness(self) -> int:
         return self.sldSharpness.value()
+
+    @Slot()
+    def settings_changed_handler(self):
+        if self.sender().parent() != self:
+            self.saved_image_brightness = int(settings.SAVED_IMAGE_BRIGHTNESS)
+            self.saved_image_contrast = int(settings.SAVED_IMAGE_CONTRAST)
+            self.saved_image_sharpness = int(settings.SAVED_IMAGE_SHARPNESS)
+            self.load()
+            self.redraw.emit()
+
