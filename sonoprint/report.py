@@ -2,7 +2,7 @@ from PySide6.QtCore import QPoint, Qt, QRect, QSize
 from PySide6.QtGui import QPainter, QFont
 from PySide6.QtPrintSupport import QPrinter
 
-from dicomimagelist import DicomImageList, ImageBox
+from dicomimagelist import DicomImageList
 from settings import settings
 
 # dimensions are in millimeters
@@ -99,7 +99,7 @@ def make(printer: QPrinter, viewer: DicomImageList):
         painter.drawText(target_rect, Qt.AlignRight | Qt.AlignTop,
                          viewer.device_info)
 
-    def _draw_image_box(box_: ImageBox, p: QPoint):
+    def _draw_image_box(box_, p: QPoint):
         box_rect = QRect(p.x() + mm_to_pix(BOX_MARGINS),
                          p.y() + mm_to_pix(BOX_MARGINS),
                          item_width - mm_to_pix(BOX_MARGINS * 2),
@@ -147,7 +147,6 @@ def make(printer: QPrinter, viewer: DicomImageList):
 
     painter.begin(printer)
     point = _page_engine()
-    box: ImageBox
     for box in viewer.boxes():
         if box.isChecked():
             _draw_image_box(box, next(point))

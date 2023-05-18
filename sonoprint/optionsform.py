@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QSlider, QDialog, QPushButton, QApplication)
 from PySide6.QtGui import QPixmap, QIcon
 from PIL import ImageQt
+
 from settings import settings
 from tools import tune
 
@@ -14,7 +15,6 @@ DEFAULT_IMAGE_SHARPNESS = int(settings.DEFAULT_IMAGE_SHARPNESS)
 
 
 class OptionsForm(QDialog):
-
     redraw = Signal()
 
     def __init__(self, pixmap: QPixmap):
@@ -155,4 +155,3 @@ class OptionsForm(QDialog):
             self.saved_image_sharpness = int(settings.SAVED_IMAGE_SHARPNESS)
             self.load()
             self.redraw.emit()
-

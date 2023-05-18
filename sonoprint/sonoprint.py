@@ -127,7 +127,6 @@ class Sonoprint(QApplication):
     settings_changed = Signal()
 
 
-
 if __name__ == '__main__':
     app = Sonoprint(sys.argv)
     ex = Viewer()
