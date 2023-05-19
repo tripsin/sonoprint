@@ -1,9 +1,10 @@
 from PySide6.QtCore import QPoint, Qt, QRect, QSize
-from PySide6.QtGui import QPainter, QFont
+from PySide6.QtGui import QPainter, QFont, QPageSize
 from PySide6.QtPrintSupport import QPrinter
 
 from dicomimagelist import DicomImageList
 from settings import settings
+from tools import tune_qpixmap
 
 # dimensions are in millimeters
 MIN_ITEM_WIDTH = int(settings.MIN_ITEM_WIDTH)
@@ -40,7 +41,7 @@ def mm_to_pix(mm: int) -> int:
 def make(printer: QPrinter, viewer: DicomImageList):
     printer.setResolution(PRINTER_DPI)
     printer.setColorMode(QPrinter.ColorMode.GrayScale)
-    printer.setWinPageSize(QPrinter.A4)
+    printer.setPageSize(QPageSize(QPageSize.A4))
     printer.setFullPage(True)
 
     painter = QPainter()
@@ -118,11 +119,15 @@ def make(printer: QPrinter, viewer: DicomImageList):
                                           box_rect.height(),
                                           Qt.KeepAspectRatio,
                                           Qt.SmoothTransformation)
+        tuned_image = tune_qpixmap(scaled_image,
+                                   box_.options.brightness(),
+                                   box_.options.contrast(),
+                                   box_.options.sharpness())
         image_rect = QRect(box_rect.left(),
                            box_rect.top() + header_rect.height() + 1,
                            box_rect.width(),
                            scaled_image.height())
-        painter.drawPixmap(image_rect, scaled_image)
+        painter.drawPixmap(image_rect, tuned_image)
         # -------------------------- comment printing -------------------------
         comment_rect = QRect(box_rect.left(),
                              image_rect.top() + image_rect.height() + 1,
