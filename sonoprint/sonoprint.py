@@ -111,7 +111,7 @@ class Viewer(QMainWindow):
             dialog.paintRequested.connect(self.handle_paint_request)
             dialog.showMaximized()
             dialog.setWindowIcon(QIcon(':/icons/sonoprint.ico'))
-            dialog.exec_()
+            dialog.exec()
 
     @staticmethod
     def show_settings():

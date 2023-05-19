@@ -154,5 +154,6 @@ def make(printer: QPrinter, viewer: DicomImageList):
     point = _page_engine()
     for box in viewer.boxes():
         if box.isChecked():
+            # noinspection PyTypeChecker
             _draw_image_box(box, next(point))
     painter.end()
