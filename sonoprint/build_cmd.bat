@@ -1,2 +1,2 @@
-pyinstaller --noconsole --onefile --clean --noconfirm --icon=..\icons\sonoprint.ico sonoprint.py
+pyinstaller --noconsole --onefile --clean --hiddenimport=pydicom.encoders.gdcm --hiddenimport=pydicom.encoders.pylibjpeg --noconfirm --icon=..\icons\sonoprint.ico sonoprint.py
 copy /Y .\settings.ini .\dist\settings.ini
